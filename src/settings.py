@@ -152,3 +152,21 @@ INTERNAL_IPS = [
 ]
 
 AUTH_USER_MODEL = 'cors.User'
+
+
+#    JWT
+
+REST_FRAMEWORK = {
+
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+
+    )
+
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=50),
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
