@@ -27,7 +27,7 @@ urlpatterns = [
 #     API
     path('',include('cors.urls')),
     path('',include('userprofile.urls')),
-    # path('',include('product.urls')),
+    path('',include('product.urls')),
 
 
 #     template_name
