@@ -23,6 +23,13 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+#     API
+
+
+#     template_name
+
+    path('', TemplateView.as_view(template_name='home/base.html'), name='base'),
 ]
 
 if settings.DEBUG:
