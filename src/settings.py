@@ -43,6 +43,9 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
+
+# App in Project
+    'cors.apps.CorsConfig',
 ]
 
 MIDDLEWARE = [
