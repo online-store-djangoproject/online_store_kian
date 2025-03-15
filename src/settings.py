@@ -47,6 +47,7 @@ INSTALLED_APPS = [
 # App in Project
     'cors.apps.CorsConfig',
     'userprofile.apps.UserprofileConfig',
+    'products.apps.ProductsConfig',
 ]
 
 MIDDLEWARE = [
