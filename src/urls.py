@@ -35,6 +35,7 @@ urlpatterns = [
     path('', TemplateView.as_view(template_name='home/base.html'), name='base'),
 ]
 
+
 if settings.DEBUG:
     urlpatterns += [
         path('__debug__/', include('debug_toolbar.urls')),
