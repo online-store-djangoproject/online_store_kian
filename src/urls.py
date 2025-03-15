@@ -25,6 +25,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
 #     API
+    path('',include('cors.urls')),
+    # path('',include('userprofile.urls')),
+    # path('',include('product.urls')),
 
 
 #     template_name
