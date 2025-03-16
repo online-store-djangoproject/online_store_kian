@@ -4,6 +4,11 @@ from django.contrib.auth import authenticate
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken,Token
+from django.conf import settings
+import redis
+from .email import send_otp_email
+import random
+from rest_framework.exceptions import ValidationError
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
@@ -44,8 +49,6 @@ class UserLoginSerializer(serializers.Serializer):
 
         if not email or not password:
             raise AuthenticationFailed("Both email and password are required.")
-
-
         user = authenticate(username=email, password=password)
 
         if not user:
@@ -55,9 +58,7 @@ class UserLoginSerializer(serializers.Serializer):
         if not user.is_verified:
             raise AuthenticationFailed("This account is not verified.")
 
-
         tokens = user.tokens()
-
         return {
             "email": user.email,
             "access_token": str(tokens.get("access")),
@@ -67,3 +68,50 @@ class UserLoginSerializer(serializers.Serializer):
 
 
 #  login method 2 ===
+
+redis_client = redis.StrictRedis(host='127.0.0.1', port=6379, db=1, decode_responses=True)
+
+class UserOTPLoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate(self, data):
+        email = data.get("email")
+
+        user = User.objects.filter(email=email).first()
+        if not user:
+            raise ValidationError("User with this email does not exist.")
+
+        otp = str(random.randint(100000, 999999))
+
+        redis_client.setex(f"otp:{email}", 300, otp)
+
+        send_otp_email(email, otp)
+        return data
+
+
+class UserOTPVerifySerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.CharField(max_length=6)
+
+    def validate(self, data):
+        email = data.get("email")
+        otp = data.get("otp")
+
+        stored_otp = redis_client.get(f"otp:{email}")
+
+        if not stored_otp or stored_otp != otp:
+            raise ValidationError("Invalid or expired OTP.")
+
+        user = User.objects.filter(email=email).first()
+        if not user:
+            raise ValidationError("User does not exist.")
+
+        redis_client.delete(f"otp:{email}")
+
+        tokens = user.tokens()
+        return {
+            "email": user.email,
+            "access_token": str(tokens.get("access")),
+            "refresh_token": str(tokens.get("refresh")),
+            'user_id': user.id
+        }

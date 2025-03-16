@@ -4,7 +4,8 @@ from rest_framework.views import APIView
 from rest_framework import status
 from django.views import View
 from rest_framework.response import Response
-from .serializers import UserRegisterSerializer,UserLoginSerializer
+from .serializers import UserRegisterSerializer, UserLoginSerializer, UserOTPLoginSerializer, UserOTPVerifySerializer
+
 
 # Create your views here.
 
@@ -39,3 +40,27 @@ class UserLoginView(APIView):
                 "message": "Login successful."
             }, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# login method 2
+
+# class UserOTPLoginView(APIView):
+#     def post(self, request):
+#         serializer = UserOTPLoginSerializer(data=request.data)
+#         if serializer.is_valid(raise_exception=True):
+#             return Response({
+#                 "message": "OTP has been sent to your email."
+#             }, status=status.HTTP_200_OK)
+#
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#
+#
+# class UserOTPVerifyView(APIView):
+#     def post(self, request):
+#         serializer = UserOTPVerifySerializer(data=request.data)
+#         if serializer.is_valid(raise_exception=True):
+#             return Response({
+#                 "data": serializer.validated_data,
+#                 "message": "Login successful."
+#             }, status=status.HTTP_200_OK)
+#
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
