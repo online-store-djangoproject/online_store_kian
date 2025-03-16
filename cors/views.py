@@ -105,12 +105,12 @@ class SetNewPasswordView(GenericAPIView):
 
 #  ===LogOut===
 
-# class LogoutUserView(GenericAPIView):
-#     serializer_class = LogoutUserSerializer
-#     permission_classes = (IsOwnerOrReadOnly,)
-#     def post(self, request):
-#         serializer = self.serializer_class(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-#         serializer.save()
-#         return Response(status=status.HTTP_204_NO_CONTENT)
-#
+class LogoutUserView(GenericAPIView):
+    serializer_class = LogoutUserSerializer
+    permission_classes = (IsOwnerOrReadOnly,)
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
