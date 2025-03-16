@@ -11,7 +11,7 @@ class UserAdmin(BaseUserAdmin):
     form = UserChangeForm
     add_form = UserCreationForm
     ordering = ['email']
-    list_display = ['id','email', 'phone','first_name','last_name','is_active','is_staff','created_at']
+    list_display = ['email','id', 'phone','first_name','last_name','is_active','is_staff','created_at']
     search_fields = ['phone']
     readonly_fields = ['last_login']
     filter_horizontal = ['groups','user_permissions']
