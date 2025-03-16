@@ -12,7 +12,7 @@ urlpatterns = [
     path('login/', views.UserLoginView.as_view(), name='login'),
     path("login/send_otp/", views.UserOTPLoginView.as_view(), name="send-otp"),
     path("login/verify_otp/", views.UserOTPVerifyView.as_view(), name="verify-otp"),
-    # path('logout/', views.LogoutUserView.as_view(), name='logout'),
+    path('logout/', views.LogoutUserView.as_view(), name='logout'),
 
     # password_reset & password_confirm & new_password
 #     path('password_reset/', views.PasswordResetRequestView.as_view(), name='password_reset'),
