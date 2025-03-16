@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from .serializers import UserRegisterSerializer, UserLoginSerializer, UserOTPLoginSerializer, UserOTPVerifySerializer, \
     LogoutUserSerializer, SetNewPasswordSerializer, PasswordResetRequestSerializer
 from .models import User
-# from permissions import IsOwnerOrReadOnly
+from permissions import IsOwnerOrReadOnly
 # from rest_framework.permissions import IsAuthenticated
 from django.utils.encoding import smart_str, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode

@@ -104,7 +104,6 @@ class UserOTPVerifySerializer(serializers.Serializer):
     def validate(self, data):
         email = data.get("email")
         otp = data.get("otp")
-
         stored_otp = redis_client.get(f"otp:{email}")
 
         if not stored_otp or stored_otp != otp:
