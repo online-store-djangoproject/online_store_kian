@@ -183,21 +183,22 @@ class SetNewPasswordSerializer(serializers.Serializer):
         except Exception as e:
             raise AuthenticationFailed('link is invalid or has expired.')
 
-#
-# class LogoutUserSerializer(serializers.Serializer):
-#     refresh_token = serializers.CharField()
-#
-#     default_error_messages = {
-#         'bad_token':('Token is invalid or has expired.')
-#     }
-#
-#     def validate(self, attrs):
-#         self.token = attrs.get('refresh_token')
-#         return attrs
-#
-#     def save(self, **kwargs):
-#         try:
-#             token = RefreshToken(self.token)
-#             token.blacklist()
-#         except TokenError:
-#             return self.fail('bad_token')
+# ===logout===
+
+class LogoutUserSerializer(serializers.Serializer):
+    refresh_token = serializers.CharField()
+
+    default_error_messages = {
+        'bad_token':('Token is invalid or has expired.')
+    }
+
+    def validate(self, attrs):
+        self.token = attrs.get('refresh_token')
+        return attrs
+
+    def save(self, **kwargs):
+        try:
+            token = RefreshToken(self.token)
+            token.blacklist()
+        except TokenError:
+            return self.fail('bad_token')
