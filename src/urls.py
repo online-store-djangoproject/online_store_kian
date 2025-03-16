@@ -36,6 +36,9 @@ urlpatterns = [
     path('req/', TemplateView.as_view(template_name='home/register.html'), name='req'),
     path('log/', TemplateView.as_view(template_name='home/login.html'), name='log'),
     path('basepro/', TemplateView.as_view(template_name='home/login.html'), name='basepro'),
+    path('passreq/', TemplateView.as_view(template_name='home/password_request.html'), name='passreq'),
+    path('passcon/', TemplateView.as_view(template_name='home/password_confirm.html'), name='passcon'),
+
 ]
 
 
