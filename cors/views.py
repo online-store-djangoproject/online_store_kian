@@ -9,25 +9,25 @@ from .serializers import UserRegisterSerializer,UserLoginSerializer
 # Create your views here.
 
 
-# class UserRegisterView(GenericAPIView):
-#     serializer_class = UserRegisterSerializer
-#
-#     def post(self, request):
-#         serializer = self.serializer_class(data=request.data)
-#         if serializer.is_valid(raise_exception=True):
-#             try:
-#                 serializer.save()
-#                 user = serializer.instance  # دریافت شیء User ذخیره‌شده
-#                 print(user)
-#                 return Response({
-#                     'data': UserRegisterSerializer(user).data,  # سریالایز مجدد برای حذف فیلدهای اضافی
-#                     'message': f'Hi {user.get_full_name()}! Thanks for signing up.'
-#                 }, status=status.HTTP_201_CREATED)
-#             except Exception as e:
-#                 return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-#
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-#
+class UserRegisterView(GenericAPIView):
+    serializer_class = UserRegisterSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            try:
+                serializer.save()
+                user = serializer.instance  # دریافت شیء User ذخیره‌شده
+                print(user)
+                return Response({
+                    'data': UserRegisterSerializer(user).data,  # سریالایز مجدد برای حذف فیلدهای اضافی
+                    'message': f'Hi {user.get_full_name()}! Thanks for signing up.'
+                }, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 # # login method 1
 #
 # class UserLoginView(APIView):
