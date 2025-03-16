@@ -1,14 +1,14 @@
 from django.shortcuts import render
-from rest_framework.generics import GenericAPIView
+from rest_framework.generics import GenericAPIView,UpdateAPIView
 from rest_framework.views import APIView
 from rest_framework import status
 from django.views import View
 from rest_framework.response import Response
 from .serializers import UserRegisterSerializer, UserLoginSerializer, UserOTPLoginSerializer, UserOTPVerifySerializer, \
-    LogoutUserSerializer, SetNewPasswordSerializer, PasswordResetRequestSerializer
+    LogoutUserSerializer, SetNewPasswordSerializer, PasswordResetRequestSerializer, UpdateUserSerializer
 from .models import User
 from permissions import IsOwnerOrReadOnly
-# from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from django.utils.encoding import smart_str, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -114,3 +114,22 @@ class LogoutUserView(GenericAPIView):
         serializer.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+# class UpdateUserView(UpdateAPIView):
+#
+#     serializer_class = UpdateUserSerializer
+#     permission_classes = [IsAuthenticated, IsOwnerOrReadOnly,]
+#
+#     def get_object(self):
+#         return self.request.user
+#
+#     def put(self, request, *args, **kwargs):
+#         user = self.get_object()
+#         serializer = self.get_serializer(user, data=request.data, partial=True)
+#
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response({
+#                 "message": "Profile updated successfully",
+#                 "data": serializer.data
+#             }, status=status.HTTP_200_OK)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
