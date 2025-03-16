@@ -43,24 +43,24 @@ class UserLoginView(APIView):
 
 # login method 2
 
-# class UserOTPLoginView(APIView):
-#     def post(self, request):
-#         serializer = UserOTPLoginSerializer(data=request.data)
-#         if serializer.is_valid(raise_exception=True):
-#             return Response({
-#                 "message": "OTP has been sent to your email."
-#             }, status=status.HTTP_200_OK)
-#
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-#
-#
-# class UserOTPVerifyView(APIView):
-#     def post(self, request):
-#         serializer = UserOTPVerifySerializer(data=request.data)
-#         if serializer.is_valid(raise_exception=True):
-#             return Response({
-#                 "data": serializer.validated_data,
-#                 "message": "Login successful."
-#             }, status=status.HTTP_200_OK)
-#
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class UserOTPLoginView(APIView):
+    def post(self, request):
+        serializer = UserOTPLoginSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            return Response({
+                "message": "OTP has been sent to your email."
+            }, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserOTPVerifyView(APIView):
+    def post(self, request):
+        serializer = UserOTPVerifySerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            return Response({
+                "data": serializer.validated_data,
+                "message": "Login successful."
+            }, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
