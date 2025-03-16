@@ -1,34 +1,34 @@
-# from rest_framework import serializers
-# from cors.models import User
-# from django.contrib.auth import authenticate
-# from rest_framework.exceptions import AuthenticationFailed
-# from rest_framework_simplejwt.exceptions import TokenError
-# from rest_framework_simplejwt.tokens import RefreshToken,Token
-#
-#
-# class UserRegisterSerializer(serializers.ModelSerializer):
-#     password2 = serializers.CharField(write_only=True, required=True)
-#
-#     class Meta:
-#         model = User
-#         fields = ['first_name','last_name', 'email', 'phone', 'password', 'password2']
-#         extra_kwargs = {'password': {'write_only': True}}
-#
-#     def create(self, validated_data):
-#         del validated_data['password2']
-#         user = User.objects.create_user(**validated_data)
-#         user.set_password(validated_data['password'])
-#         user.save()
-#         return user
-#
-#
-#     def validate(self, data):
-#         if data['password'] != data['password2']:
-#             raise serializers.ValidationError('Passwords must match.')
-#         return data
-#
-#
-#
+from rest_framework import serializers
+from cors.models import User
+from django.contrib.auth import authenticate
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.tokens import RefreshToken,Token
+
+
+class UserRegisterSerializer(serializers.ModelSerializer):
+    password2 = serializers.CharField(write_only=True, required=True)
+
+    class Meta:
+        model = User
+        fields = ['first_name','last_name', 'email', 'phone', 'password', 'password2']
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        del validated_data['password2']
+        user = User.objects.create_user(**validated_data)
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
+
+
+    def validate(self, data):
+        if data['password'] != data['password2']:
+            raise serializers.ValidationError('Passwords must match.')
+        return data
+
+
+
 # #  login method 1 ===
 #
 # class UserLoginSerializer(serializers.Serializer):
