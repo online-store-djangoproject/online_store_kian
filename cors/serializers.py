@@ -29,41 +29,41 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
 
 
-# #  login method 1 ===
-#
-# class UserLoginSerializer(serializers.Serializer):
-#     email = serializers.EmailField()
-#     password = serializers.CharField(write_only=True)
-#     access_token = serializers.CharField(max_length=255, read_only=True)
-#     refresh_token = serializers.CharField(max_length=255, read_only=True)
-#     user_id = serializers.IntegerField(source='id', read_only=True)
-#
-#     def validate(self, data):
-#         email = data.get('email')
-#         password = data.get('password')
-#
-#         if not email or not password:
-#             raise AuthenticationFailed("Both email and password are required.")
-#
-#
-#         user = authenticate(username=email, password=password)
-#
-#         if not user:
-#             raise AuthenticationFailed("Invalid email or password.")
-#         if not user.is_active:
-#             raise AuthenticationFailed("This account is inactive.")
-#         if not user.is_verified:
-#             raise AuthenticationFailed("This account is not verified.")
-#
-#
-#         tokens = user.tokens()
-#
-#         return {
-#             "email": user.email,
-#             "access_token": str(tokens.get("access")),
-#             "refresh_token": str(tokens.get("refresh")),
-#             'user_id': user.id
-#         }
-#
-#
-# #  login method 2 ===
+#  login method 1 ===
+
+class UserLoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+    access_token = serializers.CharField(max_length=255, read_only=True)
+    refresh_token = serializers.CharField(max_length=255, read_only=True)
+    user_id = serializers.IntegerField(source='id', read_only=True)
+
+    def validate(self, data):
+        email = data.get('email')
+        password = data.get('password')
+
+        if not email or not password:
+            raise AuthenticationFailed("Both email and password are required.")
+
+
+        user = authenticate(username=email, password=password)
+
+        if not user:
+            raise AuthenticationFailed("Invalid email or password.")
+        if not user.is_active:
+            raise AuthenticationFailed("This account is inactive.")
+        if not user.is_verified:
+            raise AuthenticationFailed("This account is not verified.")
+
+
+        tokens = user.tokens()
+
+        return {
+            "email": user.email,
+            "access_token": str(tokens.get("access")),
+            "refresh_token": str(tokens.get("refresh")),
+            'user_id': user.id
+        }
+
+
+#  login method 2 ===
