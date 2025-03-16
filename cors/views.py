@@ -114,22 +114,22 @@ class LogoutUserView(GenericAPIView):
         serializer.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-# class UpdateUserView(UpdateAPIView):
-#
-#     serializer_class = UpdateUserSerializer
-#     permission_classes = [IsAuthenticated, IsOwnerOrReadOnly,]
-#
-#     def get_object(self):
-#         return self.request.user
-#
-#     def put(self, request, *args, **kwargs):
-#         user = self.get_object()
-#         serializer = self.get_serializer(user, data=request.data, partial=True)
-#
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response({
-#                 "message": "Profile updated successfully",
-#                 "data": serializer.data
-#             }, status=status.HTTP_200_OK)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class UpdateUserView(UpdateAPIView):
+
+    serializer_class = UpdateUserSerializer
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly,]
+
+    def get_object(self):
+        return self.request.user
+
+    def put(self, request, *args, **kwargs):
+        user = self.get_object()
+        serializer = self.get_serializer(user, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                "message": "Profile updated successfully",
+                "data": serializer.data
+            }, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
