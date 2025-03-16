@@ -35,6 +35,7 @@ urlpatterns = [
     path('', TemplateView.as_view(template_name='home/base.html'), name='base'),
     path('req/', TemplateView.as_view(template_name='home/register.html'), name='req'),
     path('log/', TemplateView.as_view(template_name='home/login.html'), name='log'),
+    path('basepro/', TemplateView.as_view(template_name='home/login.html'), name='basepro'),
 ]
 
 

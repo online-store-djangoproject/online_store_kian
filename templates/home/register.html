@@ -18,7 +18,7 @@
             <input type="password" id="password2" placeholder="Confirm Password" class="w-full px-4 py-2 border rounded-lg">
             <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-lg">Register</button>
         </form>
-        <p class="text-center mt-4">Already have an account? <a href="login.html" class="text-blue-500">Login</a></p>
+        <p class="text-center mt-4">Already have an account? <a href="http://127.0.0.1:8000/log/" class="text-blue-500">Login</a></p>
     </div>
 
     <script>
@@ -39,7 +39,7 @@
             const result = await response.json();
             if (response.ok) {
                 alert("Registration successful! Redirecting to login.");
-                window.location.href = "login.html";
+                window.location.href = "http://127.0.0.1:8000/log/";
             } else {
                 alert("Error: " + JSON.stringify(result));
             }

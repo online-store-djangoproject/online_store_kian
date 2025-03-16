@@ -1,0 +1,89 @@
+<!-- profile.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-gray-100">
+    <div class="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold text-center mb-4">User Profile</h2>
+        <div id="notification" class="hidden p-2 mb-4 text-center rounded-lg"></div>
+        <div id="profile-info" class="space-y-4">
+            <p><strong>Email:</strong> <span id="email"></span></p>
+            <p><strong>First Name:</strong> <input type="text" id="first_name" class="border p-1 w-full" /></p>
+            <p><strong>Last Name:</strong> <input type="text" id="last_name" class="border p-1 w-full" /></p>
+        </div>
+        <button id="save-profile" class="w-full bg-blue-500 text-white py-2 rounded-lg mt-4">Save Changes</button>
+        <button id="logout" class="w-full bg-red-500 text-white py-2 rounded-lg mt-4">Logout</button>
+    </div>
+
+    <script>
+        function showNotification(message, type) {
+            const notification = document.getElementById("notification");
+            notification.textContent = message;
+            notification.className = `p-2 mb-4 text-center rounded-lg ${type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"}`;
+            notification.classList.remove("hidden");
+            setTimeout(() => notification.classList.add("hidden"), 3000);
+        }
+
+        async function fetchProfile() {
+            const token = sessionStorage.getItem("access_token");
+            if (!token) {
+                alert("Not authenticated. Redirecting to login.");
+                window.location.href = "login.html";
+                return;
+            }
+
+            const response = await fetch("http://127.0.0.1:8000/profile/", {
+                method: "GET",
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            const result = await response.json();
+            if (response.ok) {
+                document.getElementById("email").textContent = result.email;
+                document.getElementById("first_name").value = result.first_name;
+                document.getElementById("last_name").value = result.last_name;
+            } else {
+                alert("Error fetching profile. Redirecting to login.");
+                window.location.href = "login.html";
+            }
+        }
+
+        async function updateProfile() {
+            const token = sessionStorage.getItem("access_token");
+            const updatedData = {
+                first_name: document.getElementById("first_name").value,
+                last_name: document.getElementById("last_name").value,
+            };
+
+            const response = await fetch("http://127.0.0.1:8000/profile/update/", {
+                method: "PATCH",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(updatedData)
+            });
+            if (response.ok) {
+                showNotification("Profile updated successfully!", "success");
+            } else {
+                showNotification("Error updating profile.", "error");
+            }
+        }
+
+        document.getElementById("save-profile").addEventListener("click", updateProfile);
+
+        document.getElementById("logout").addEventListener("click", function() {
+            sessionStorage.removeItem("access_token");
+            sessionStorage.removeItem("refresh_token");
+            alert("Logged out successfully!");
+            window.location.href = "login.html";
+        });
+
+        fetchProfile();
+    </script>
+</body>
+</html>
