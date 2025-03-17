@@ -39,7 +39,7 @@
             const result = await response.json();
             if (response.ok) {
                 alert("Registration successful! Redirecting to login.");
-                window.location.href = "http://127.0.0.1:8000/log/";
+                window.location.href = "http://127.0.0.1:8000/choicelog/";
             } else {
                 alert("Error: " + JSON.stringify(result));
             }

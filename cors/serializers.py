@@ -123,7 +123,7 @@ class UserOTPVerifySerializer(serializers.Serializer):
             'user_id': user.id
         }
 
-
+#  password
 
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -205,14 +205,13 @@ class LogoutUserSerializer(serializers.Serializer):
 
 # ===Update(firstname & lastname)===
 
-class UpdateUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['first_name', 'last_name']
-
-    def update(self, instance, validated_data):
-
-        instance.first_name = validated_data.get('first_name', instance.first_name)
-        instance.last_name = validated_data.get('last_name', instance.last_name)
-        instance.save()
-        return instance
+# class UserProfileSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = User
+#         fields = ['first_name', 'last_name']
+#
+#     def update(self, instance, validated_data):
+#         instance.first_name = validated_data.get('first_name', instance.first_name)
+#         instance.last_name = validated_data.get('last_name', instance.last_name)
+#         instance.save()
+#         return instance

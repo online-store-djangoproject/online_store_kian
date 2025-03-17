@@ -34,8 +34,10 @@ urlpatterns = [
 
     path('', TemplateView.as_view(template_name='home/base.html'), name='base'),
     path('req/', TemplateView.as_view(template_name='home/register.html'), name='req'),
+    path('choicelog/', TemplateView.as_view(template_name='home/choiceloging.html'), name='choicelog'),
     path('log/', TemplateView.as_view(template_name='home/login.html'), name='log'),
-    path('basepro/', TemplateView.as_view(template_name='home/login.html'), name='basepro'),
+    path('log2/', TemplateView.as_view(template_name='home/login2.html'), name='log2'),
+    path('probase/', TemplateView.as_view(template_name='home/profile.html'), name='probase'),
     path('passreq/', TemplateView.as_view(template_name='home/password_request.html'), name='passreq'),
     path('passcon/', TemplateView.as_view(template_name='home/password_confirm.html'), name='passcon'),
 

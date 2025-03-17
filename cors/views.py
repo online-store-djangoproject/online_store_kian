@@ -5,7 +5,7 @@ from rest_framework import status
 from django.views import View
 from rest_framework.response import Response
 from .serializers import UserRegisterSerializer, UserLoginSerializer, UserOTPLoginSerializer, UserOTPVerifySerializer, \
-    LogoutUserSerializer, SetNewPasswordSerializer, PasswordResetRequestSerializer, UpdateUserSerializer
+    LogoutUserSerializer, SetNewPasswordSerializer, PasswordResetRequestSerializer, UserProfileSerializer
 from .models import User
 from permissions import IsOwnerOrReadOnly
 from rest_framework.permissions import IsAuthenticated
@@ -114,22 +114,19 @@ class LogoutUserView(GenericAPIView):
         serializer.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-class UpdateUserView(UpdateAPIView):
-
-    serializer_class = UpdateUserSerializer
-    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly,]
-
-    def get_object(self):
-        return self.request.user
-
-    def put(self, request, *args, **kwargs):
-        user = self.get_object()
-        serializer = self.get_serializer(user, data=request.data, partial=True)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response({
-                "message": "Profile updated successfully",
-                "data": serializer.data
-            }, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+# class UserProfileView(APIView):
+#     permission_classes = [IsAuthenticated,IsOwnerOrReadOnly,]
+#
+#     def get(self, request):
+#         serializer = UserProfileSerializer(request.user)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+#
+# class UpdateUserProfileView(APIView):
+#     permission_classes = [IsAuthenticated,IsOwnerOrReadOnly,]
+#
+#     def patch(self, request):
+#         serializer = UserProfileSerializer(request.user, data=request.data, partial=True)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
