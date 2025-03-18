@@ -6,7 +6,7 @@ class CustomerSerializer(serializers.ModelSerializer):
         model = Customer
         fields = ['user']
 
-# class AddressSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Address
-#         fields = '__all__'
+class AddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        fields = '__all__'
