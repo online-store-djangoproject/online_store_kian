@@ -38,6 +38,7 @@ urlpatterns = [
     path('log/', TemplateView.as_view(template_name='home/login.html'), name='log'),
     path('log2/', TemplateView.as_view(template_name='home/login2.html'), name='log2'),
     path('probase/', TemplateView.as_view(template_name='home/profile.html'), name='probase'),
+    path('proaddress/', TemplateView.as_view(template_name='home/profile_address.html'), name='proaddress'),
     path('passreq/', TemplateView.as_view(template_name='home/password_request.html'), name='passreq'),
     path('passcon/', TemplateView.as_view(template_name='home/password_confirm.html'), name='passcon'),
 
