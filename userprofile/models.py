@@ -13,3 +13,15 @@ class Customer(models.Model):
 
     def __str__(self):
         return self.user.email
+
+
+class Address(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name="addresses")
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    full_address = models.TextField()
+    postalcode_regex = RegexValidator(r'^\d{10}$', message=' Enter a valid zipcode. ')
+    postal_code = models.CharField(max_length=10, validators=[postalcode_regex])
+
+    def __str__(self):
+        return f"{self.city}, {self.state}"
