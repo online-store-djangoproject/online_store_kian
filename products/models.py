@@ -11,3 +11,13 @@ class Category(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Review(models.Model):
+    product = models.ForeignKey("Product", on_delete=models.CASCADE, related_name="reviews")
+    date_created = models.DateTimeField(auto_now_add=True)
+    description = models.TextField(default="description")
+    name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.description
