@@ -1,52 +1,20 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صفحه اصلی</title>
+    <title>Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="flex justify-center items-center h-screen bg-gray-100">
-    <div class="bg-white p-6 rounded-lg shadow-lg">
-        <h1 class="text-xl font-bold mb-4 text-center">انتخاب صفحه</h1>
-        <div class="grid grid-cols-2 gap-4">
-            <button class="bg-blue-500 text-white px-4 py-2 rounded" onclick="navigateTo('http://127.0.0.1:8000/pro/')">my profile</button>
-            <button class="bg-green-500 text-white px-4 py-2 rounded" onclick="navigateTo('http://127.0.0.1:8000/proaddress/')">my address</button>
-            <button class="bg-yellow-500 text-white px-4 py-2 rounded" onclick="navigateTo('page3.html')">صفحه ۳</button>
-            <button class="bg-red-500 text-white px-4 py-2 rounded" onclick="navigateTo('page4.html')">صفحه ۴</button>
-        </div>
+<body class="flex items-center justify-center min-h-screen bg-gray-100">
+    <div class="w-full max-w-md p-6 bg-white rounded-lg shadow-md text-center">
+        <h2 class="text-2xl font-bold mb-4">Welcome to Your Profile</h2>
+
+        <a href="http://127.0.0.1:8000/pro/" class="block w-full bg-blue-500 text-white py-2 rounded-lg mb-2">View & Edit Profile</a>
+        <a href="http://127.0.0.1:8000/proaddress/" class="block w-full bg-green-500 text-white py-2 rounded-lg mb-2">View & Edit Addresses</a>
+        <a href="#" class="block w-full bg-yellow-500 text-white py-2 rounded-lg mb-2">Orders</a>
+        <a href="#" class="block w-full bg-red-500 text-white py-2 rounded-lg mb-2">Orders</a>
+        <a href="#" class="block w-full bg-gray-500 text-white py-2 rounded-lg mb-2">Back Page</a>
     </div>
-
-    <script>
-    {#async function navigateTo(page) {#}
-    {#    const token = localStorage.getItem("access_token"); // تغییر نام به access_token#}
-    {#    if (!token) {#}
-    {#        alert("لطفا ابتدا وارد شوید");#}
-    {#        window.location.href = "http://127.0.0.1:8000/choicelog/";#}
-    {#        return;#}
-    {#    }#}
-
-        try {
-            const response = await fetch("http://127.0.0.1:8000/token/refresh/", { // مسیر API صحیح شود
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                }
-            });
-
-        {#    if (!response.ok) {#}
-        {#        throw new Error("توکن معتبر نیست");#}
-        {#    }#}
-        {##}
-        {#    window.location.href = page;#}
-        {#} catch (error) {#}
-        {#    alert(error.message);#}
-        {#    localStorage.removeItem("access_token"); // حذف access_token در صورت نامعتبر بودن#}
-        {#    window.location.href = "http://127.0.0.1:8000/choicelog/";#}
-        {#}#}
-    }
-</script>
-
 </body>
 </html>

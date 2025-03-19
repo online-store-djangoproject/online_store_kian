@@ -27,6 +27,7 @@
         </div>
 
         <button id="edit-btn" class="w-full bg-gray-500 text-white py-2 rounded-lg mt-4">Edit Profile</button>
+        <button onclick="goBack()" class="w-full bg-gray-500 text-white py-2 rounded-lg mt-4">Back</button>
     </div>
 
     <script>
@@ -129,6 +130,10 @@
         document.getElementById("save-btn").addEventListener("click", updateProfile);
 
         window.onload = getProfile;
+
+        function goBack() {
+            window.history.back();
+        }
     </script>
 </body>
 </html>
