@@ -6,194 +6,117 @@
     <title>Manage Addresses</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+<body class="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
     <div class="w-full max-w-lg p-6 bg-white rounded-lg shadow-md">
         <h2 class="text-2xl font-bold text-center mb-4">Manage Addresses</h2>
 
-        <!-- Notification -->
-        <div id="notification" class="hidden p-2 mb-4 text-center rounded-lg"></div>
-
         <!-- Address List -->
-        <div id="address-list" class="space-y-4"></div>
+        <ul id="address-list" class="mb-4"></ul>
 
-        <!-- Add/Edit Address Form -->
-        <div id="address-form" class="hidden">
-            <input type="text" id="city" placeholder="City" class="border p-2 w-full mb-2" />
-            <input type="text" id="state" placeholder="State" class="border p-2 w-full mb-2" />
-            <textarea id="full-address" placeholder="Full Address" class="border p-2 w-full mb-2"></textarea>
-            <input type="text" id="postal-code" placeholder="Postal Code" class="border p-2 w-full mb-2" />
+        <!-- Add Address Form -->
+        <input type="text" id="city" placeholder="City" class="border p-2 w-full mb-2" />
+        <input type="text" id="state" placeholder="State" class="border p-2 w-full mb-2" />
+        <textarea id="full-address" placeholder="Full Address" class="border p-2 w-full mb-2"></textarea>
+        <input type="text" id="postal-code" placeholder="Postal Code" class="border p-2 w-full mb-2" />
 
-            <button id="save-btn" class="w-full bg-blue-500 text-white py-2 rounded-lg">Save Address</button>
-        </div>
-
-        <button id="add-address-btn" class="w-full bg-green-500 text-white py-2 rounded-lg mt-4">Add New Address</button>
-
-        <!-- Back Button -->
-        <button onclick="goBack()" class="w-full bg-gray-500 text-white py-2 rounded-lg mt-4">Go Back</button>
+        <button id="save-btn" class="w-full bg-blue-500 text-white py-2 rounded-lg">Save Address</button>
+        <button id="back-btn" class="w-full bg-gray-500 text-white py-2 rounded-lg mt-2">Back</button>
     </div>
 
     <script>
-        function goBack() {
-            window.history.back();
-        }
-
-        // سایر کدهای مربوط به دریافت، اضافه کردن، ویرایش و حذف آدرس‌ها اینجا قرار می‌گیرد
-
-        const API_BASE_URL = "http://127.0.0.1:8000/addresses/";
-        let editingAddressId = null;
-
-        function showNotification(message, type) {
-            const notification = document.getElementById("notification");
-            notification.textContent = message;
-            notification.className = `p-2 mb-4 text-center rounded-lg ${type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"}`;
-            notification.classList.remove("hidden");
-            setTimeout(() => notification.classList.add("hidden"), 3000);
-        }
-
-        function checkAuth() {
-            const accessToken = localStorage.getItem("access_token");
-            if (!accessToken) {
-                showNotification("Please log in first.", "error");
-                setTimeout(() => window.location.href = "http://127.0.0.1:8000/choicelog/", 2000);
-            }
-            return accessToken;
+        const accessToken = localStorage.getItem("access_token");
+        if (!accessToken) {
+            alert("Please log in first.");
+            window.location.href = "http://127.0.0.1:8000/choicelog/";
         }
 
         async function getAddresses() {
-            const accessToken = checkAuth();
-            if (!accessToken) return;
-
-            const response = await fetch(API_BASE_URL, {
+            const response = await fetch("http://127.0.0.1:8000/addresses/", {
                 method: "GET",
-                headers: {
-                    "Authorization": `Bearer ${accessToken}`,
-                    "Content-Type": "application/json"
-                }
+                headers: { "Authorization": `Bearer ${accessToken}` }
             });
 
-            if (response.status === 401) {
-                showNotification("Session expired. Please log in again.", "error");
-                setTimeout(() => {
-                    localStorage.removeItem("access_token");
-                    window.location.href = "http://127.0.0.1:8000/choicelog/";
-                }, 2000);
-                return;
+            if (response.ok) {
+                const addresses = await response.json();
+                const addressList = document.getElementById("address-list");
+                addressList.innerHTML = "";
+                addresses.forEach(address => {
+                    const li = document.createElement("li");
+                    li.className = "border p-2 mb-2 rounded-lg flex justify-between items-center";
+                    li.innerHTML = `
+                        ${address.city}, ${address.state} - ${address.postal_code}
+                        <button onclick="deleteAddress(${address.id})" class="text-red-500">Delete</button>
+                    `;
+                    addressList.appendChild(li);
+                });
             }
-
-            const addresses = await response.json();
-            renderAddressList(addresses);
-        }
-
-        function renderAddressList(addresses) {
-            const addressList = document.getElementById("address-list");
-            addressList.innerHTML = "";
-
-            if (addresses.length === 0) {
-                addressList.innerHTML = "<p class='text-center text-gray-500'>No addresses found.</p>";
-                return;
-            }
-
-            addresses.forEach(address => {
-                const div = document.createElement("div");
-                div.className = "p-4 border rounded-lg bg-gray-50 shadow";
-                div.innerHTML = `
-                    <p><strong>City:</strong> ${address.city}</p>
-                    <p><strong>State:</strong> ${address.state}</p>
-                    <p><strong>Address:</strong> ${address.full_address}</p>
-                    <p><strong>Postal Code:</strong> ${address.postal_code}</p>
-                    <div class="mt-2 space-x-2">
-                        <button onclick="editAddress(${address.id})" class="bg-yellow-500 text-white px-3 py-1 rounded">Edit</button>
-                        <button onclick="deleteAddress(${address.id})" class="bg-red-500 text-white px-3 py-1 rounded">Delete</button>
-                    </div>
-                `;
-                addressList.appendChild(div);
-            });
         }
 
         async function saveAddress() {
-            const accessToken = checkAuth();
-            if (!accessToken) return;
+    const accessToken = localStorage.getItem("access_token");
+    if (!accessToken) {
+        alert("Please log in first.");
+        return;
+    }
 
-            const city = document.getElementById("city").value;
-            const state = document.getElementById("state").value;
-            const fullAddress = document.getElementById("full-address").value;
-            const postalCode = document.getElementById("postal-code").value;
+    const city = document.getElementById("city").value;
+    const state = document.getElementById("state").value;
+    const full_address = document.getElementById("full-address").value;
+    const postal_code = document.getElementById("postal-code").value;
 
-            const data = { city, state, full_address: fullAddress, postal_code: postalCode };
-            const url = editingAddressId ? `${API_BASE_URL}${editingAddressId}/` : API_BASE_URL;
-            const method = editingAddressId ? "PATCH" : "POST";
+    // بررسی مقدار ورودی‌ها
+    if (!city || !state || !full_address || !postal_code) {
+        alert("All fields are required!");
+        return;
+    }
 
-            const response = await fetch(url, {
-                method: method,
-                headers: {
-                    "Authorization": `Bearer ${accessToken}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(data)
-            });
-
-            if (response.ok) {
-                showNotification(editingAddressId ? "Address updated successfully!" : "Address added successfully!", "success");
-                document.getElementById("address-form").classList.add("hidden");
-                getAddresses();
-            } else {
-                showNotification("Failed to save address. Please try again.", "error");
-            }
-
-            editingAddressId = null;
-        }
-
-        async function editAddress(id) {
-            const accessToken = checkAuth();
-            if (!accessToken) return;
-
-            const response = await fetch(`${API_BASE_URL}${id}/`, {
-                method: "GET",
-                headers: {
-                    "Authorization": `Bearer ${accessToken}`,
-                    "Content-Type": "application/json"
-                }
-            });
-
-            if (response.ok) {
-                const address = await response.json();
-                document.getElementById("city").value = address.city;
-                document.getElementById("state").value = address.state;
-                document.getElementById("full-address").value = address.full_address;
-                document.getElementById("postal-code").value = address.postal_code;
-
-                document.getElementById("address-form").classList.remove("hidden");
-                editingAddressId = id;
-            }
-        }
-
-        async function deleteAddress(id) {
-            const accessToken = checkAuth();
-            if (!accessToken) return;
-
-            const response = await fetch(`${API_BASE_URL}${id}/`, {
-                method: "DELETE",
-                headers: {
-                    "Authorization": `Bearer ${accessToken}`,
-                    "Content-Type": "application/json"
-                }
-            });
-
-            if (response.ok) {
-                showNotification("Address deleted successfully!", "success");
-                getAddresses();
-            } else {
-                showNotification("Failed to delete address.", "error");
-            }
-        }
-
-        document.getElementById("add-address-btn").addEventListener("click", () => {
-            document.getElementById("address-form").classList.remove("hidden");
+    try {
+        const response = await fetch("http://127.0.0.1:8000/addresses/", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${accessToken}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                city: city,
+                state: state,
+                full_address: full_address,
+                postal_code: postal_code
+            })
         });
 
-        document.getElementById("save-btn").addEventListener("click", saveAddress);
+        const data = await response.json();
 
-        window.onload = getAddresses;
+        if (response.ok) {
+            alert("Address saved successfully!");
+            window.location.reload();
+        } else {
+            console.log("Server response:", data);
+            alert("Failed to save address: " + (data.detail || "Unknown error"));
+        }
+    } catch (error) {
+        console.error("Error:", error);
+        alert("Something went wrong!");
+    }
+}
+
+        async function deleteAddress(id) {
+            const response = await fetch(`http://127.0.0.1:8000/addresses/${id}/`, {
+                method: "DELETE",
+                headers: { "Authorization": `Bearer ${accessToken}` }
+            });
+            if (response.ok) {
+                alert("Address deleted successfully!");
+                getAddresses();
+            } else {
+                alert("Failed to delete address.");
+            }
+        }
+
+        document.getElementById("save-btn").addEventListener("click", saveAddress);
+        document.getElementById("back-btn").addEventListener("click", () => window.history.back());
+
+        getAddresses();
     </script>
 </body>
 </html>

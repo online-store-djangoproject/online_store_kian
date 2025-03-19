@@ -1,8 +1,8 @@
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status, generics
-from .models import Customer, Address
-from .serializers import CustomerSerializer, AddressSerializer
+from .models import Address
+from .serializers import AddressSerializer
 # Create your views here.
 
 
@@ -11,10 +11,10 @@ class AddressListCreateView(generics.ListCreateAPIView):
     serializer_class = AddressSerializer
 
     def get_queryset(self):
-        return Address.objects.filter(customer=self.request.user.customer)
+        return Address.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
-        serializer.save(customer=self.request.user.customer)
+        serializer.save(user=self.request.user)
 
 
 class AddressUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
@@ -23,4 +23,4 @@ class AddressUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Address.objects.all()
 
     def get_queryset(self):
-        return Address.objects.filter(customer=self.request.user.customer)
+        return Address.objects.filter(user=self.request.user)

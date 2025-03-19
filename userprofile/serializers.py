@@ -1,13 +1,11 @@
 from rest_framework import serializers
-from .models import Customer, Address
+from .models import Address
 
-class CustomerSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Customer
-        fields = ['user']
+
 
 
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
-        fields = '__all__'
+        fields = ['id','user','city','state','full_address','postal_code']
+        extra_kwargs = {"user": {"read_only": True}}
