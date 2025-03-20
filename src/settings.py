@@ -194,3 +194,9 @@ CACHES = {
         }
     }
 }
+
+# REST_FRAMEWORK_PAGE
+
+# REST_FRAMEWORK = {
+#     'PAGE_SIZE': 2
+# }
