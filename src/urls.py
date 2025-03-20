@@ -42,6 +42,7 @@ urlpatterns = [
     path('proaddress/', TemplateView.as_view(template_name='home/profile_address.html'), name='proaddress'),
     path('passreq/', TemplateView.as_view(template_name='home/password_request.html'), name='passreq'),
     path('passcon/', TemplateView.as_view(template_name='home/password_confirm.html'), name='passcon'),
+    path('pproductt/', TemplateView.as_view(template_name='home/products.html'), name='pproductt'),
 
 ]
 

@@ -15,7 +15,11 @@ class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('title',)}
 
 admin.site.register(Category, CategoryAdmin)
+''
+class ReviewAdmin(admin.ModelAdmin):
+    model = Review
+    list_display = ['product','date_created','description','name']
 
-
+admin.site.register(Review, ReviewAdmin)
 
 # Register your models here.
