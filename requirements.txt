@@ -8,3 +8,5 @@ django-filter==24.3
 djangorestframework_simplejwt==5.4.0
 django-cors-headers==4.7.0
 django-redis==5.4.0
+drf-nested-routers==0.94.1
+
