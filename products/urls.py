@@ -5,10 +5,10 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_nested import routers
 
 
-# router = routers.DefaultRouter()
+router = routers.DefaultRouter()
 
-# router.register("products", views.ProductsViewSet)
-# router.register("categories", views.CategoryViewSet)
+router.register("products", views.ProductsViewSet)
+router.register("categories", views.CategoryViewSet)
 urlpatterns = [
-    # path("", include(router.urls)),
+    path("", include(router.urls)),
 ]
