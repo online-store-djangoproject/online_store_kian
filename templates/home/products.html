@@ -3,86 +3,279 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لیست محصولات</title>
-
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>فروشگاه آنلاین</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100 p-4">
+<!-- قسمت دسته‌بندی‌ها -->
+<div class="mb-4">
+    <h2 class="text-lg font-bold">دسته‌بندی‌ها</h2>
+    <div id="categories-list" class="flex gap-2 mt-2"></div>
+</div>
 
-    <div class="container mx-auto p-4">
-        <!-- نوار جستجو و مرتب‌سازی -->
-        <div class="flex space-x-4 mb-4">
-            <input type="text" id="search" placeholder="جستجوی محصول..."
-                   class="p-2 border rounded w-1/2">
-
-            <select id="sort" class="p-2 border rounded">
-                <option value="">مرتب‌سازی</option>
-                <option value="price_asc">قیمت: کم به زیاد</option>
-                <option value="price_desc">قیمت: زیاد به کم</option>
-            </select>
-        </div>
-
-        <!-- لیست محصولات -->
-        <div id="productsList" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+    <!-- قسمت جستجو و مرتب‌سازی -->
+    <div class="mb-4 flex gap-2">
+        <input type="text" id="search" class="p-2 border rounded w-1/2" placeholder="جستجو محصول...">
+        <select id="sort" class="p-2 border rounded">
+            <option value="default">مرتب‌سازی</option>
+            <option value="price-asc">قیمت: کم به زیاد</option>
+            <option value="price-desc">قیمت: زیاد به کم</option>
+        </select>
     </div>
 
-<script>
-    document.addEventListener("DOMContentLoaded", () => {
-    const searchInput = document.getElementById("search");
-    const sortSelect = document.getElementById("sort");
-    const productsList = document.getElementById("productsList");
+    <!-- لیست محصولات -->
+    <div id="products-list" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
 
-    async function fetchProducts() {
-        try {
-            let url = "http://127.0.0.1:8000/products/";
+    <!-- نمایش جزئیات محصول -->
+    <div id="product-details" class="hidden p-4 bg-white shadow rounded mt-4">
+        <button onclick="closeDetails()" class="bg-red-500 text-white px-3 py-1 rounded">بستن</button>
+        <h2 id="product-name" class="text-xl font-bold mt-2"></h2>
+        <img id="product-image" class="w-64 h-64 object-cover mt-2" />
+        <p id="product-description" class="mt-2"></p>
+        <p id="product-price" class="font-bold text-lg mt-2"></p>
+        <h3 class="text-lg font-semibold mt-4">نظرات:</h3>
+        <ul id="reviews-list" class="mt-2"></ul>
 
-            // افزودن پارامترهای جستجو و مرتب‌سازی به URL
-            const searchValue = searchInput.value.trim();
-            const sortValue = sortSelect.value;
+        <!-- فرم افزودن نظر -->
+        <h3 class="text-lg font-semibold mt-4">افزودن نظر جدید:</h3>
+        <input type="text" id="review-name" class="p-2 border rounded w-full mt-2" placeholder="نام شما">
+        <textarea id="review-description" class="p-2 border rounded w-full mt-2" placeholder="نظر شما"></textarea>
+        <button onclick="submitReview()" class="bg-green-500 text-white px-4 py-2 rounded mt-2">ارسال نظر</button>
+        <button onclick="addToCart('PRODUCT_ID')" class="bg-yellow-500 text-white px-3 py-1 rounded mt-2">
+        🛒 افزودن به سبد خرید
+        </button>
 
-            if (searchValue) url += `?search=${searchValue}`;
-            if (sortValue === "price_asc") url += "&ordering=price";
-            if (sortValue === "price_desc") url += "&ordering=-price";
+    </div>
 
-            let response = await fetch(url);
-            let data = await response.json();
-            displayProducts(data);
-        } catch (error) {
-            console.error("خطا در دریافت محصولات:", error);
+    <script>
+        const API_URL = "http://127.0.0.1:8000";
+        let currentProductId = null;
+
+        // دریافت و نمایش لیست محصولات
+        async function loadProducts() {
+            try {
+                const response = await fetch(`${API_URL}/products/`);
+                const products = await response.json();
+                renderProducts(products);
+            } catch (error) {
+                console.error("خطا در دریافت محصولات:", error);
+            }
         }
-    }
 
-    function displayProducts(products) {
-        productsList.innerHTML = "";
-        products.forEach(product => {
-            let productCard = document.createElement("div");
-            productCard.className = "bg-white p-4 rounded shadow";
+        // نمایش محصولات در صفحه
+        function renderProducts(products) {
+    const productsContainer = document.getElementById("products-list");
+    productsContainer.innerHTML = "";
 
-            productCard.innerHTML = `
-                <img src="${product.image || 'default.jpg'}" class="w-full h-40 object-cover rounded">
-                <h2 class="text-lg font-bold mt-2">${product.name}</h2>
-                <p>${product.description}</p>
-                <p class="text-green-600 font-bold">${product.price} تومان</p>
-                <button onclick="viewProductDetails('${product.id}')"
-                        class="mt-2 bg-blue-500 text-white p-2 rounded">
-                        جزئیات
-                </button>
-            `;
+    products.forEach(product => {
+        const productCard = document.createElement("div");
+        productCard.classList.add("bg-white", "p-4", "shadow", "rounded", "relative");
 
-            productsList.appendChild(productCard);
+        const imageUrl = `${API_URL}${product.image}`;
+
+        // برچسب‌ها
+        const topDealTag = product.top_deal ? `<span class="absolute top-2 right-2 bg-red-500 text-white text-sm px-2 py-1 rounded">🔥 پیشنهاد ویژه!</span>` : "";
+        const flashSalesTag = product.flash_sales ? `<span class="absolute top-2 left-2 bg-yellow-500 text-white text-sm px-2 py-1 rounded">⚡ فروش ویژه!</span>` : "";
+        const discountTag = product.discount ? `<span class="absolute bottom-2 left-2 bg-green-500 text-white text-sm px-2 py-1 rounded">🏷️ تخفیف دارد!</span>` : "";
+
+
+        // بررسی موجودی
+        const inventoryMessage = product.inventory > 0
+            ? `<p class="text-gray-600 text-sm">موجودی: ${product.inventory} عدد</p>`
+            : `<p class="text-red-500 font-bold">❌ ناموجود</p>`;
+
+        // دکمه نمایش جزئیات (اگه موجودی صفر باشه، غیرفعال می‌شه)
+        const detailsButton = product.inventory > 0
+            ? `<button onclick="showProductDetails('${product.id}')" class="bg-blue-500 text-white px-3 py-1 rounded mt-2">مشاهده جزئیات</button>`
+            : `<button class="bg-gray-400 text-white px-3 py-1 rounded mt-2 cursor-not-allowed" disabled>ناموجود</button>`;
+
+        productCard.innerHTML = `
+            <div class="relative">
+                ${discountTag}
+                ${topDealTag}
+                ${flashSalesTag}
+                <img src="${product.image}" alt="${product.name}" class="w-full h-48 object-cover rounded">
+            </div>
+            <h3 class="text-lg font-bold mt-2">${product.name}</h3>
+            <p>${product.description}</p>
+            <p class="text-green-600 font-bold">${product.price} تومان</p>
+            {#<p class="text-gray-600 text-sm">موجودی: ${product.inventory} عدد</p>#}
+            ${inventoryMessage}
+            ${detailsButton}
+            {#<button onclick="showProductDetails('${product.id}')" class="bg-blue-500 text-white px-3 py-1 rounded mt-2">مشاهده جزئیات</button>#}
+        `;
+
+        productsContainer.appendChild(productCard);
+    });
+}
+
+
+        // جستجو در محصولات
+        document.getElementById("search").addEventListener("input", function () {
+            const searchValue = this.value.toLowerCase();
+            fetch(`${API_URL}/products/`)
+                .then(res => res.json())
+                .then(products => {
+                    const filteredProducts = products.filter(product =>
+                        product.name.toLowerCase().includes(searchValue)
+                    );
+                    renderProducts(filteredProducts);
+                });
         });
+
+        // مرتب‌سازی محصولات
+        document.getElementById("sort").addEventListener("change", function () {
+            const sortType = this.value;
+
+            fetch(`${API_URL}/products/`)
+                .then(res => res.json())
+                .then(products => {
+                    if (sortType === "price-asc") {
+                        products.sort((a, b) => a.price - b.price);
+                    } else if (sortType === "price-desc") {
+                        products.sort((a, b) => b.price - a.price);
+                    }
+                    renderProducts(products);
+                });
+        });
+
+        // نمایش اطلاعات یک محصول خاص
+        async function showProductDetails(productId) {
+            try {
+                currentProductId = productId;
+                const response = await fetch(`${API_URL}/products/${productId}/`);
+                const product = await response.json();
+
+                document.getElementById("product-name").innerText = product.name;
+                document.getElementById("product-description").innerText = product.description;
+                document.getElementById("product-price").innerText = `قیمت: ${product.price} تومان`;
+                document.getElementById("product-image").src = `${product.image}`;
+
+                document.getElementById("product-details").classList.remove("hidden");
+
+                loadReviews(productId);
+            } catch (error) {
+                console.error("خطا در دریافت اطلاعات محصول:", error);
+            }
+        }
+
+        // دریافت نظرات محصول
+        async function loadReviews(productId) {
+            try {
+                const response = await fetch(`${API_URL}/products/${productId}/reviews/`);
+                const reviews = await response.json();
+
+                const reviewsList = document.getElementById("reviews-list");
+                reviewsList.innerHTML = "";
+
+                reviews.forEach(review => {
+                    const reviewItem = document.createElement("li");
+                    reviewItem.classList.add("border-b", "py-2");
+                    reviewItem.innerHTML = `<strong>${review.name}:</strong> ${review.description}`;
+                    reviewsList.appendChild(reviewItem);
+                });
+
+            } catch (error) {
+                console.error("خطا در دریافت نظرات:", error);
+            }
+        }
+
+        // ارسال نظر جدید
+        async function submitReview() {
+            const name = document.getElementById("review-name").value;
+            const description = document.getElementById("review-description").value;
+
+            if (!name || !description) {
+                alert("لطفاً نام و نظر خود را وارد کنید.");
+                return;
+            }
+
+            const reviewData = {
+                name,
+                description
+            };
+
+            try {
+                await fetch(`${API_URL}/products/${currentProductId}/reviews/`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(reviewData)
+                });
+
+                document.getElementById("review-name").value = "";
+                document.getElementById("review-description").value = "";
+
+                loadReviews(currentProductId);
+            } catch (error) {
+                console.error("خطا در ارسال نظر:", error);
+            }
+        }
+
+        // بستن صفحه جزئیات
+        function closeDetails() {
+            document.getElementById("product-details").classList.add("hidden");
+        }
+
+        // بارگذاری اولیه محصولات
+        document.addEventListener("DOMContentLoaded", loadProducts);
+
+
+    {#    categori#}
+
+        // دریافت و نمایش لیست دسته‌بندی‌ها
+async function loadCategories() {
+    try {
+        const response = await fetch(`${API_URL}/categories/`);
+        const categories = await response.json();
+        renderCategories(categories);
+    } catch (error) {
+        console.error("خطا در دریافت دسته‌بندی‌ها:", error);
     }
+}
 
-    function viewProductDetails(productId) {
-        window.location.href = `product_details.html?id=${productId}`;
+// نمایش دسته‌بندی‌ها در صفحه
+function renderCategories(categories) {
+    const categoriesContainer = document.getElementById("categories-list");
+    categoriesContainer.innerHTML = "";
+
+    // ایجاد دکمه "همه محصولات"
+    const allButton = document.createElement("button");
+    allButton.innerText = "همه محصولات";
+    allButton.classList.add("bg-gray-300", "px-3", "py-1", "rounded", "cursor-pointer");
+    allButton.addEventListener("click", loadProducts);
+    categoriesContainer.appendChild(allButton);
+
+    categories.forEach(category => {
+        const categoryButton = document.createElement("button");
+        categoryButton.innerText = category.title;
+        categoryButton.classList.add("bg-blue-500", "text-white", "px-3", "py-1", "rounded", "cursor-pointer");
+
+        categoryButton.addEventListener("click", () => filterProductsByCategory(category.category_id));
+
+        categoriesContainer.appendChild(categoryButton);
+    });
+}
+
+// فیلتر کردن محصولات بر اساس دسته‌بندی
+async function filterProductsByCategory(categoryId) {
+    try {
+        const response = await fetch(`${API_URL}/products/`);
+        const products = await response.json();
+
+        // فیلتر محصولات با بررسی مقدار null برای category
+        const filteredProducts = products.filter(product => product.category && product.category.category_id === categoryId);
+
+        renderProducts(filteredProducts);
+    } catch (error) {
+        console.error("خطا در فیلتر محصولات:", error);
     }
+}
 
-    searchInput.addEventListener("input", fetchProducts);
-    sortSelect.addEventListener("change", fetchProducts);
 
-    fetchProducts();
-});
+// بارگذاری اولیه دسته‌بندی‌ها
+document.addEventListener("DOMContentLoaded", loadCategories);
 
-</script>
+    </script>
+
 </body>
 </html>
