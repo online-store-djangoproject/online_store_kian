@@ -120,3 +120,11 @@ class CreateOrderSerializer(serializers.Serializer):
             OrderItem.objects.bulk_create(orderitems)
             # Cart.objects.filter(id=cart_id).delete()
             return order
+
+
+
+
+class UpdateOrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ["pending_status"]
