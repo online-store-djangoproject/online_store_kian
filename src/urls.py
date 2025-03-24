@@ -28,6 +28,7 @@ urlpatterns = [
     path('',include('cors.urls')),
     path('',include('userprofile.urls')),
     path('',include('products.urls')),
+    path('',include('orders.urls')),
 
 
 #     template_name

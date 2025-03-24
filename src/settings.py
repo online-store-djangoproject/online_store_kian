@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'cors.apps.CorsConfig',
     'userprofile.apps.UserprofileConfig',
     'products.apps.ProductsConfig',
+    'orders.apps.OrdersConfig',
 ]
 
 MIDDLEWARE = [
