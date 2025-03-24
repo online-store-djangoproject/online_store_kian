@@ -72,3 +72,12 @@ class CartSerializer(serializers.ModelSerializer):
         total = sum([item.quantity * item.product.price for item in items])
         return total
 
+
+#  order
+
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    product = SimpleProductSerializer()
+    class Meta:
+        model = OrderItem
+        fields = ["id", "product", "quantity"]
