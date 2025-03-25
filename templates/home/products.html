@@ -41,15 +41,84 @@
         <input type="text" id="review-name" class="p-2 border rounded w-full mt-2" placeholder="نام شما">
         <textarea id="review-description" class="p-2 border rounded w-full mt-2" placeholder="نظر شما"></textarea>
         <button onclick="submitReview()" class="bg-green-500 text-white px-4 py-2 rounded mt-2">ارسال نظر</button>
-        <button onclick="addToCart('PRODUCT_ID')" class="bg-yellow-500 text-white px-3 py-1 rounded mt-2">
-        🛒 افزودن به سبد خرید
-        </button>
+        <!-- کنترل تعداد محصول -->
+    <div class="flex items-center mt-4">
+        <button onclick="changeQuantity(-1)" class="bg-gray-300 px-3 py-1 rounded">-</button>
+        <span id="product-quantity" class="mx-4 text-lg">1</span>
+        <button onclick="changeQuantity(1)" class="bg-gray-300 px-3 py-1 rounded">+</button>
+    </div>
+
+    <!-- دکمه افزودن به سبد خرید -->
+    <button onclick="addToCart()" class="bg-yellow-500 text-white px-4 py-2 rounded mt-4">🛒 افزودن به سبد خرید</button>
+
+    <a href="http://127.0.0.1:8000/carttt/" class="bg-blue-500 text-white px-4 py-2 rounded mt-4">🛍 رفتن به سبد خرید</a>
+{#        <a href="http://127.0.0.1:8000/carttt/" class="bg-yellow-500 text-white px-4 py-2 rounded mt-4">🛍 رفتن به سبد خرید</a>#}
+
+{#        <button onclick="addToCart('PRODUCT_ID')" class="bg-yellow-500 text-white px-3 py-1 rounded mt-2">#}
+{#        🛒 افزودن به سبد خرید#}
+{#        </button>#}
 
     </div>
 
     <script>
         const API_URL = "http://127.0.0.1:8000";
         let currentProductId = null;
+        let currentQuantity = 1;
+        let cartId = null;
+
+    // تابع تغییر تعداد محصول
+    function changeQuantity(amount) {
+        currentQuantity = Math.max(1, currentQuantity + amount);
+        document.getElementById("product-quantity").innerText = currentQuantity;
+    }
+
+    async function getOrCreateCart() {
+        try {
+            let response = await fetch(`${API_URL}/carts/`, { method: "GET" });
+            let carts = await response.json();
+
+            if (carts.length > 0) {
+                cartId = carts[0].id;
+            } else {
+                let newCartResponse = await fetch(`${API_URL}/carts/`, { method: "POST" });
+                let newCart = await newCartResponse.json();
+                cartId = newCart.id;
+            }
+        } catch (error) {
+            console.error("خطا در دریافت یا ایجاد سبد خرید:", error);
+        }
+    }
+
+    async function addToCart() {
+        if (!currentProductId || !cartId) {
+            alert("سبد خرید یافت نشد! لطفاً صفحه را دوباره بارگذاری کنید.");
+            return;
+        }
+
+        const data = {
+            product_id: currentProductId,
+            quantity: currentQuantity
+        };
+
+        try {
+            const response = await fetch(`${API_URL}/carts/${cartId}/items/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                alert("محصول به سبد خرید اضافه شد!");
+            } else {
+                alert("خطا در افزودن محصول به سبد خرید");
+            }
+        } catch (error) {
+            console.error("خطا در افزودن محصول به سبد خرید:", error);
+        }
+    }
+
 
         // دریافت و نمایش لیست محصولات
         async function loadProducts() {
@@ -61,6 +130,8 @@
                 console.error("خطا در دریافت محصولات:", error);
             }
         }
+         // دریافت cart_id در هنگام بارگذاری صفحه
+    window.onload = getOrCreateCart;
 
         // نمایش محصولات در صفحه
         function renderProducts(products) {
@@ -143,6 +214,9 @@
         async function showProductDetails(productId) {
             try {
                 currentProductId = productId;
+                currentQuantity = 1;
+            document.getElementById("product-quantity").innerText = currentQuantity;
+
                 const response = await fetch(`${API_URL}/products/${productId}/`);
                 const product = await response.json();
 

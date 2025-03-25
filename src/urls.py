@@ -44,7 +44,7 @@ urlpatterns = [
     path('passreq/', TemplateView.as_view(template_name='home/password_request.html'), name='passreq'),
     path('passcon/', TemplateView.as_view(template_name='home/password_confirm.html'), name='passcon'),
     path('pproductt/', TemplateView.as_view(template_name='home/products.html'), name='pproductt'),
-    path('pproddeta/', TemplateView.as_view(template_name='home/product_details.html'), name='pproddeta'),
+    path('carttt/', TemplateView.as_view(template_name='home/cart.html'), name='carttt'),
 
 ]
 
