@@ -9,10 +9,11 @@ from products.serializers import SimpleProductSerializer
 class CartItemSerializer(serializers.ModelSerializer):
     product = SimpleProductSerializer(many=False)
     sub_total = serializers.SerializerMethodField(method_name="total")
+    inventory = serializers.IntegerField(source='product.inventory', read_only=True)
 
     class Meta:
         model = Cartitems
-        fields = ["id", "cart", "product", "quantity", "sub_total"]
+        fields = ["id", "cart", "product", "quantity", "sub_total","inventory"]
 
     def total(self, cartitem: Cartitems):
         return cartitem.quantity * cartitem.product.price
@@ -24,7 +25,6 @@ class AddCartItemSerializer(serializers.ModelSerializer):
     def validate_product_id(self, value):
         if not Product.objects.filter(pk=value).exists():
             raise serializers.ValidationError("There is no product associated with the given ID")
-
         return value
 
     def save(self, **kwargs):
@@ -34,13 +34,22 @@ class AddCartItemSerializer(serializers.ModelSerializer):
 
         try:
             cartitem = Cartitems.objects.get(product_id=product_id, cart_id=cart_id)
+            product = cartitem.product
+
+            # استفاده از `inventory` به جای `stock`
+            if cartitem.quantity + quantity > product.inventory:
+                raise serializers.ValidationError("موجودی محصول کافی نیست")
+
             cartitem.quantity += quantity
             cartitem.save()
 
             self.instance = cartitem
 
-
-        except:
+        except Cartitems.DoesNotExist:
+            # در صورتی که آیتمی وجود نداشت، آیتم جدید اضافه کن
+            product = Product.objects.get(pk=product_id)
+            if quantity > product.inventory:
+                raise serializers.ValidationError("موجودی محصول کافی نیست")
 
             self.instance = Cartitems.objects.create(cart_id=cart_id, **self.validated_data)
 
@@ -53,9 +62,38 @@ class AddCartItemSerializer(serializers.ModelSerializer):
 
 class UpdateCartItemSerializer(serializers.ModelSerializer):
     # id = serializers.IntegerField(read_only=True)
+    # class Meta:
+    #     model = Cartitems
+    #     fields = ["quantity"]
+    # class Meta:
+    #     model = Cartitems
+    #     fields = ["quantity"]
+    #
+    # def update(self, instance, validated_data):
+    #     quantity = validated_data.get("quantity", instance.quantity)
+    #     if quantity <= 0:
+    #         instance.delete()  # اگر مقدار صفر شد، آیتم حذف شود
+    #     else:
+    #         instance.quantity = quantity
+    #         instance.save()
+    #     return instance
     class Meta:
         model = Cartitems
         fields = ["quantity"]
+
+    def validate_quantity(self, value):
+        cartitem = self.instance
+        if value > cartitem.product.inventory:
+            raise serializers.ValidationError("موجودی محصول کافی نیست")
+        return value
+
+    def update(self, instance, validated_data):
+        if validated_data["quantity"] < 1:
+            instance.delete()  # حذف آیتم از سبد خرید
+            return None  # مقدار None برمی‌گردونیم تا فرانت بفهمه حذف شده
+        return super().update(instance, validated_data)
+
+
 
 
 class CartSerializer(serializers.ModelSerializer):

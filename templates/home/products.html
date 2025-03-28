@@ -7,6 +7,34 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 p-4">
+<!-- دکمه‌های ورود، ثبت‌نام و پروفایل -->
+<div id="auth-buttons">
+    <a id="login-btn" href="http://127.0.0.1:8000/choicelog/" class="bg-blue-500 text-white px-4 py-2 rounded">ورود</a>
+    <a id="signup-btn" href="http://127.0.0.1:8000/req/" class="bg-green-500 text-white px-4 py-2 rounded">ثبت‌نام</a>
+    <a id="profile-btn" href="http://127.0.0.1:8000/basepro/" class="bg-gray-700 text-white px-4 py-2 rounded hidden">پروفایل من</a>
+</div>
+
+<button onclick="checkout()" class="bg-green-500 text-white px-4 py-2 rounded mt-4">
+    تسویه حساب
+</button>
+
+<!-- دکمه مشاهده سبد خرید -->
+<button id="show-cart-btn" class="bg-blue-500 text-white px-4 py-2 rounded">مشاهده سبد خرید</button>
+
+<!-- اینجا سبد خرید نمایش داده می‌شود -->
+<div id="cart-container" class="hidden mt-4 p-4 bg-white shadow rounded w-full">
+    <h2 class="text-xl font-bold">سبد خرید</h2>
+    <div id="cart-items-container" class="space-y-2 mt-2"></div>
+    <div id="cart-totall" class="font-bold mt-4"></div>
+    <button onclick="checkout()" class="bg-green-500 text-white px-4 py-2 rounded mt-4">
+    تسویه حساب
+</button>
+    <button id="hide-cart-btn" class="bg-red-500 text-white px-4 py-2 rounded mt-4">بستن سبد خرید</button>
+</div>
+
+
+
+
 <!-- قسمت دسته‌بندی‌ها -->
 <div class="mb-4">
     <h2 class="text-lg font-bold">دسته‌بندی‌ها</h2>
@@ -51,7 +79,19 @@
     <!-- دکمه افزودن به سبد خرید -->
     <button onclick="addToCart()" class="bg-yellow-500 text-white px-4 py-2 rounded mt-4">🛒 افزودن به سبد خرید</button>
 
-    <a href="http://127.0.0.1:8000/carttt/" class="bg-blue-500 text-white px-4 py-2 rounded mt-4">🛍 رفتن به سبد خرید</a>
+
+        <!-- نمایش سبد خرید -->
+<div id="cart-summary" class="p-4 bg-white shadow rounded mt-4">
+    <h2 class="text-xl font-bold">سبد خرید</h2>
+    <div id="cart-items" class="mt-4"></div>
+    <div id="cart-total" class="mt-4 text-lg font-bold"></div>
+{#    <button onclick="clearCart()" class="bg-red-500 text-white px-4 py-2 rounded mt-4">حذف تمام آیتم‌ها</button>#}
+    <button onclick="checkout()" class="bg-green-500 text-white px-4 py-2 rounded mt-4">
+    تسویه حساب
+</button>
+
+</div>
+
 {#        <a href="http://127.0.0.1:8000/carttt/" class="bg-yellow-500 text-white px-4 py-2 rounded mt-4">🛍 رفتن به سبد خرید</a>#}
 
 {#        <button onclick="addToCart('PRODUCT_ID')" class="bg-yellow-500 text-white px-3 py-1 rounded mt-2">#}
@@ -65,6 +105,25 @@
         let currentProductId = null;
         let currentQuantity = 1;
         let cartId = null;
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const token = localStorage.getItem("access_token");  // گرفتن توکن از localStorage
+
+        if (token) {
+            // کاربر لاگین کرده => نمایش دکمه "پروفایل" و مخفی کردن دکمه‌های "ورود" و "ثبت‌نام"
+            document.getElementById("profile-btn").classList.remove("hidden");
+            document.getElementById("login-btn").classList.add("hidden");
+            document.getElementById("signup-btn").classList.add("hidden");
+        }
+    });
+{#    if (token) {#}
+{#        // اگر توکن وجود دارد، لینک را به پروفایل تنظیم کن#}
+{#        profileBtn.href = "http://127.0.0.1:8000/basepro/";#}
+{#    } else {#}
+{#        // اگر توکن وجود ندارد، لینک را به لاگین تنظیم کن#}
+{#        profileBtn.href = "http://127.0.0.1:8000/choicelog/";#}
+{#    }#}
+
 
     // تابع تغییر تعداد محصول
     function changeQuantity(amount) {
@@ -90,34 +149,36 @@
     }
 
     async function addToCart() {
-        if (!currentProductId || !cartId) {
-            alert("سبد خرید یافت نشد! لطفاً صفحه را دوباره بارگذاری کنید.");
-            return;
-        }
-
-        const data = {
-            product_id: currentProductId,
-            quantity: currentQuantity
-        };
-
-        try {
-            const response = await fetch(`${API_URL}/carts/${cartId}/items/`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(data)
-            });
-
-            if (response.ok) {
-                alert("محصول به سبد خرید اضافه شد!");
-            } else {
-                alert("خطا در افزودن محصول به سبد خرید");
-            }
-        } catch (error) {
-            console.error("خطا در افزودن محصول به سبد خرید:", error);
-        }
+    if (!currentProductId || !cartId) {
+        alert("سبد خرید یافت نشد! لطفاً صفحه را دوباره بارگذاری کنید.");
+        return;
     }
+
+    const data = {
+        product_id: currentProductId,
+        quantity: currentQuantity
+    };
+
+    try {
+        const response = await fetch(`${API_URL}/carts/${cartId}/items/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+            alert("محصول به سبد خرید اضافه شد!");
+            loadCartItems(); // بروزرسانی سبد خرید بدون رفرش صفحه
+        } else {
+            alert("خطا در افزودن محصول به سبد خرید");
+        }
+    } catch (error) {
+        console.error("خطا در افزودن محصول به سبد خرید:", error);
+    }
+}
+
 
 
         // دریافت و نمایش لیست محصولات
@@ -292,6 +353,278 @@
 
         // بارگذاری اولیه محصولات
         document.addEventListener("DOMContentLoaded", loadProducts);
+
+    {# carttttt#}
+
+// تابع ذخیره کردن سبد خرید در localStorage
+function saveCartToLocalStorage(cartItems) {
+    localStorage.setItem("cart_items", JSON.stringify(cartItems));
+}
+
+// خواندن سبد خرید از localStorage
+function getCartItemsFromLocalStorage() {
+    return JSON.parse(localStorage.getItem("cart_items")) || [];
+}
+
+
+
+ // بارگذاری سبد خرید و نمایش آیتم‌ها
+async function loadCartItems() {
+    if (!cartId) {
+        alert("سبد خرید یافت نشد! لطفاً صفحه را دوباره بارگذاری کنید.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/carts/${cartId}/items/`);
+        const cartItems = await response.json();
+        renderCartItems(cartItems);  // نمایش سبد خرید در UI
+        saveCartToLocalStorage(cartItems);
+    } catch (error) {
+        console.error("خطا در دریافت آیتم‌های سبد خرید:", error);
+    }
+}
+
+
+// به‌روزرسانی اطلاعات سبد خرید در بالای صفحه
+function updateCartSummary(cartItems) {
+    const cartSummary = document.getElementById("cart-summary");
+    const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+    const totalPrice = cartItems.reduce((acc, item) => acc + (item.quantity * item.product.price), 0);
+
+    // به‌روزرسانی تعداد محصولات و قیمت کل در بالای صفحه
+    cartSummary.innerHTML = `
+        <p>تعداد محصولات: ${totalItems}</p>
+        <p>مجموع سبد خرید: ${totalPrice} تومان</p>
+    `;
+}
+
+// نمایش آیتم‌های سبد خرید
+function renderCartItems(cartItems) {
+    const cartItemsContainer = document.getElementById("cart-items");
+    cartItemsContainer.innerHTML = "";
+
+    if (cartItems.length === 0) {
+        cartItemsContainer.innerHTML = "<p>سبد خرید شما خالی است.</p>";
+        document.getElementById("cart-total").innerText = "";
+        return;
+    }
+
+    let total = 0;
+
+    cartItems.forEach(item => {
+        const itemTotal = item.quantity * item.product.price;
+        total += itemTotal;
+
+        const itemElement = document.createElement("div");
+        itemElement.classList.add("flex", "justify-between", "items-center", "border-b", "py-2");
+
+        itemElement.innerHTML = `
+            <div>
+                <h4 class="text-lg font-bold">${item.product.name}</h4>
+                <p class="text-gray-600">تعداد: ${item.quantity}</p>
+                <p class="text-gray-500">قیمت واحد: ${item.product.price} تومان</p>
+            </div>
+            <div>
+                <p class="font-bold">${itemTotal} تومان</p>
+            </div>
+            <div class="flex items-center">
+                <button onclick="updateItemQuantity('${item.id}', ${item.quantity - 1})" class="bg-gray-300 px-2 py-1 rounded">-</button>
+                <span class="mx-2">${item.quantity}</span>
+                <button onclick="updateItemQuantity('${item.id}', ${item.quantity + 1})" class="bg-gray-300 px-2 py-1 rounded">+</button>
+                <button onclick="removeItemFromCart('${item.id}')" class="bg-red-500 text-white px-2 py-1 rounded ml-2">حذف</button>
+            </div>
+        `;
+
+        cartItemsContainer.appendChild(itemElement);
+    });
+
+    document.getElementById("cart-total").innerText = `مجموع سبد خرید: ${total} تومان`;
+}
+
+async function updateItemQuantity(itemId, newQuantity, maxQuantity) {
+    if (newQuantity > maxQuantity) {
+        alert("موجودی کافی نیست!");
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/carts/${cartId}/items/${itemId}/`, {
+            method: newQuantity < 1 ? "DELETE" : "PATCH", // اگر کمتر از ۱ بود، حذف کن
+            headers: { "Content-Type": "application/json" },
+            body: newQuantity < 1 ? null : JSON.stringify({ quantity: newQuantity }),
+        });
+
+        if (!response.ok) {
+            throw new Error("خطا در به‌روزرسانی تعداد آیتم");
+        }
+
+        loadCartItems(); // سبد خرید را دوباره بارگذاری کن
+    } catch (error) {
+        console.error("خطا در به‌روزرسانی تعداد آیتم:", error);
+    }
+}
+
+
+
+
+async function removeItemFromCart(itemId) {
+    try {
+        await fetch(`${API_URL}/carts/${cartId}/items/${itemId}`, {
+            method: "DELETE"
+        });
+        loadCartItems();
+
+    } catch (error) {
+        console.error("خطا در حذف آیتم:", error);
+    }
+}
+
+async function clearCart() {
+    try {
+        await fetch(`${API_URL}/carts/${cartId}/clear/`, { method: "DELETE" });
+        loadCartItems();
+    } catch (error) {
+        console.error("خطا در حذف تمامی آیتم‌ها:", error);
+
+    }
+}
+
+
+// فراخوانی بارگذاری سبد خرید هنگام ورود به صفحه سبد خرید
+document.addEventListener("DOMContentLoaded", async () => {
+    await getOrCreateCart();  // ایجاد یا دریافت سبد خرید
+    loadCartItems();  // بارگذاری و نمایش آیتم‌های سبد خرید
+});
+
+
+function checkout() {
+    const token = localStorage.getItem("access_token");
+
+    if (token) {
+        // اگر توکن وجود داشت، کاربر را به صفحه تسویه حساب هدایت کن
+        window.location.href = "http://127.0.0.1:8000/check/";  // مسیر صفحه تسویه حساب
+    } else {
+        // اگر لاگین نیست، به صفحه لاگین هدایت شود
+        window.location.href = "http://127.0.0.1:8000/choicelog/";  // مسیر صفحه لاگین
+    }
+}
+
+
+
+    {#namayesh safeye asli#}
+
+
+// 🚀 بارگذاری و نمایش آیتم‌های سبد خرید
+async function loadCartItemss() {
+    try {
+        const response = await fetch(`${API_URL}/carts/${cartId}/items/`);
+        const cartItems = await response.json();
+
+        const cartContainer = document.getElementById("cart-items-container");
+        cartContainer.innerHTML = ""; // پاک کردن لیست قبلی
+
+        if (cartItems.length === 0) {
+            cartContainer.innerHTML = "<p>سبد خرید شما خالی است.</p>";
+            document.getElementById("cart-totall").innerText = "";
+            return;
+        }
+
+        let total = 0;
+        cartItems.forEach(item => {
+            total += item.quantity * item.product.price;
+
+            const itemElement = document.createElement("div");
+            itemElement.classList.add("flex", "justify-between", "items-center", "border-b", "py-2");
+
+            itemElement.innerHTML = `
+                <div>
+                    <h4 class="text-lg font-bold">${item.product.name}</h4>
+                    <p class="text-gray-600">تعداد: <span id="quantity-${item.id}">${item.quantity}</span></p>
+                    <p class="text-gray-500">قیمت واحد: ${item.product.price} تومان</p>
+                </div>
+                <div>
+                    <button onclick="updateItemQuantityy('${item.id}', ${item.quantity - 1}, ${item.product.inventory})" class="bg-red-500 text-white px-2 py-1 rounded">-</button>
+                    <span class="mx-2">${item.quantity}</span>
+                    <button onclick="updateItemQuantityy('${item.id}', ${item.quantity + 1}, ${item.product.inventory})" class="bg-green-500 text-white px-2 py-1 rounded">+</button>
+                    <button onclick="removeItem('${item.id}')" class="bg-gray-500 text-white px-2 py-1 rounded">🗑 حذف</button>
+                </div>
+            `;
+
+            cartContainer.appendChild(itemElement);
+        });
+
+        document.getElementById("cart-totall").innerText = `مجموع: ${total} تومان`;
+
+    } catch (error) {
+        console.error("خطا در دریافت آیتم‌های سبد خرید:", error);
+    }
+}
+
+// 🚀 بروزرسانی تعداد محصول در سبد خرید
+async function updateItemQuantityy(itemId, newQuantity, inventory) {
+    if (newQuantity < 1) {
+        removeItem(itemId);  // اگر تعداد کمتر از ۱ شد، حذف کن
+        return;
+    }
+
+    if (newQuantity > inventory) {
+        alert("🚫 موجودی کافی نیست!");
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_URL}/carts/${cartId}/items/${itemId}/`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ quantity: newQuantity }),
+        });
+
+        if (!response.ok) throw new Error("خطا در بروزرسانی تعداد آیتم");
+
+        // 👌 بدون رفرش صفحه، مقدار جدید را تغییر می‌دهد
+        document.getElementById(`quantity-${itemId}`).innerText = newQuantity;
+        loadCartItemss(); // بروزرسانی قیمت کل
+
+    } catch (error) {
+        console.error("خطا در بروزرسانی تعداد آیتم:", error);
+    }
+}
+
+// 🚀 حذف یک آیتم از سبد خرید
+async function removeItem(itemId) {
+    try {
+        const response = await fetch(`${API_URL}/carts/${cartId}/items/${itemId}/`, {
+            method: "DELETE",
+        });
+
+        if (!response.ok) throw new Error("خطا در حذف آیتم");
+
+        loadCartItemss(); // بروزرسانی سبد خرید بدون نیاز به رفرش
+
+    } catch (error) {
+        console.error("خطا در حذف آیتم:", error);
+    }
+}
+
+
+        {#dokme #}
+
+document.getElementById("show-cart-btn").addEventListener("click", async () => {
+    await loadCartItemss();
+    document.getElementById("cart-container").classList.remove("hidden");
+});
+
+document.getElementById("hide-cart-btn").addEventListener("click", () => {
+    document.getElementById("cart-container").classList.add("hidden");
+});
+
+
+
+
+
+    {#asdfg#}
+
 
 
     {#    categori#}

@@ -4,77 +4,251 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>سبد خرید</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 p-4">
-    <div class="container mx-auto">
-        <h1 class="text-2xl font-bold mb-4">سبد خرید</h1>
+<body class="bg-gray-100 p-6">
+    <div class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-md">
+        <h1 class="text-2xl font-bold mb-4">🛒 سبد خرید شما</h1>
 
-        <div id="cart-items" class="bg-white p-4 shadow rounded"></div>
-        <p class="text-lg font-bold mt-4">مجموع: <span id="cart-total">0</span> تومان</p>
+        <!-- لیست آیتم‌های سبد خرید -->
+        <div id="cart-items" class="space-y-4"></div>
 
-        <button onclick="checkout()" class="bg-green-500 text-white px-4 py-2 rounded mt-4">پرداخت</button>
+        <!-- جمع کل -->
+        <div class="flex justify-between items-center mt-4">
+            <span class="text-lg font-semibold">💰 جمع کل: <span id="total-price">0</span> تومان</span>
+        </div>
+
+        <!-- دکمه‌ها -->
+        <div class="mt-6 flex justify-between">
+            <button onclick="window.location.href='http://127.0.0.1:8000/pproductt/'"
+                    class="bg-gray-500 text-white px-4 py-2 rounded">🔙 بازگشت به فروشگاه</button>
+            <button id="checkout-btn" class="bg-blue-500 text-white px-4 py-2 rounded hidden">✅ ثبت سفارش</button>
+        </div>
     </div>
 
     <script>
-        const API_URL = "http://127.0.0.1:8000";
-        let cartId = localStorage.getItem("cartId");
+        const cartId = localStorage.getItem("cart_id");
+        const token = localStorage.getItem("jwt_token");
+        const cartItemsContainer = document.getElementById("cart-items");
+        const totalPriceElement = document.getElementById("total-price");
+        const checkoutBtn = document.getElementById("checkout-btn");
 
-        async function loadCart() {
-            if (!cartId) return;
+        // دریافت سبد خرید
+        async function fetchCart() {
+            if (!cartId) {
+                cartItemsContainer.innerHTML = "<p class='text-center text-red-500'>سبد خرید شما خالی است!</p>";
+                return;
+            }
 
             try {
-                const response = await fetch(`${API_URL}/carts/${cartId}/`);
-                const cart = await response.json();
-                renderCart(cart);
+                console.log("در حال دریافت سبد خرید...");
+                const response = await fetch(`http://127.0.0.1:8000/carts/${cartId}/items/`, {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error("خطا در دریافت سبد خرید");
+
+                const data = await response.json();
+                console.log("دریافت داده‌ها:", data); // اینجا برای مشاهده داده‌ها به کنسول می‌زنیم
+                renderCartItems(data.items, data.grand_total);
             } catch (error) {
                 console.error("خطا در دریافت سبد خرید:", error);
             }
         }
 
-        function renderCart(cart) {
-            const cartContainer = document.getElementById("cart-items");
-            cartContainer.innerHTML = "";
-            document.getElementById("cart-total").innerText = cart.grand_total;
+        // نمایش آیتم‌های سبد خرید
+        function renderCartItems(items, total) {
+            cartItemsContainer.innerHTML = "";
+            totalPriceElement.textContent = total;
 
-            cart.items.forEach(item => {
-                const cartItem = document.createElement("div");
-                cartItem.classList.add("border-b", "py-2");
-                cartItem.innerHTML = `
-                    <p><strong>${item.product.name}</strong> - ${item.quantity} عدد - ${item.sub_total} تومان</p>
-                    <button onclick="removeFromCart('${item.id}')" class="bg-red-500 text-white px-2 py-1 rounded">حذف</button>
-                `;
-                cartContainer.appendChild(cartItem);
-            });
-        }
-
-        async function addToCart(productId) {
-            if (!cartId) {
-                const cartResponse = await fetch(`${API_URL}/carts/`, { method: "POST" });
-                const newCart = await cartResponse.json();
-                cartId = newCart.id;
-                localStorage.setItem("cartId", cartId);
+            if (items.length === 0) {
+                cartItemsContainer.innerHTML = "<p class='text-center text-red-500'>سبد خرید شما خالی است!</p>";
+                return;
             }
 
-            await fetch(`${API_URL}/carts/${cartId}/items/`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ product_id: productId, quantity: 1 })
+            items.forEach(item => {
+                cartItemsContainer.innerHTML += `
+                    <div class="flex justify-between items-center border-b pb-3">
+                        <img src="${item.product.image}" class="w-16 h-16 rounded">
+                        <span class="text-lg">${item.product.name}</span>
+                        <span class="text-lg">${item.product.price} تومان</span>
+                        <div class="flex items-center">
+                            <button onclick="updateQuantity('${item.id}', ${item.quantity - 1})"
+                                    class="bg-red-400 px-2 py-1 text-white rounded">-</button>
+                            <span class="mx-2">${item.quantity}</span>
+                            <button onclick="updateQuantity('${item.id}', ${item.quantity + 1})"
+                                    class="bg-green-400 px-2 py-1 text-white rounded">+</button>
+                        </div>
+                        <button onclick="removeItem('${item.id}')"
+                                class="bg-red-600 text-white px-2 py-1 rounded">❌</button>
+                    </div>
+                `;
             });
-
-            loadCart();
         }
 
-        async function removeFromCart(itemId) {
-            await fetch(`${API_URL}/carts/${cartId}/items/${itemId}/`, { method: "DELETE" });
-            loadCart();
+        // تغییر تعداد محصول
+        async function updateQuantity(itemId, newQuantity) {
+            if (newQuantity < 1) return removeItem(itemId);
+
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/carts/${cartId}/items/${itemId}/`, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ quantity: newQuantity })
+                });
+
+                if (!response.ok) throw new Error("خطا در تغییر تعداد محصول");
+                fetchCart(); // به‌روزرسانی لیست
+            } catch (error) {
+                console.error(error);
+            }
         }
 
-        function checkout() {
-            alert("پرداخت انجام شد!");
+        // حذف محصول از سبد خرید
+        async function removeItem(itemId) {
+            try {
+                const response = await fetch(`http://127.0.0.1:8000/carts/${cartId}/items/${itemId}/`, {
+                    method: "DELETE",
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error("خطا در حذف محصول");
+                fetchCart();
+            } catch (error) {
+                console.error(error);
+            }
         }
 
-        document.addEventListener("DOMContentLoaded", loadCart);
+        // ثبت سفارش
+        async function checkout() {
+            try {
+                const response = await fetch("http://127.0.0.1:8000/orders/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ cart_id: cartId })
+                });
+
+                if (!response.ok) throw new Error("خطا در ثبت سفارش");
+                alert("✅ سفارش شما با موفقیت ثبت شد!");
+                localStorage.removeItem("cart_id");
+                window.location.href = "http://127.0.0.1:8000/pproductt/"; // بازگشت به صفحه فروشگاه
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        // بررسی احراز هویت و نمایش دکمه ثبت سفارش
+        if (token) {
+            checkoutBtn.classList.remove("hidden");
+            checkoutBtn.addEventListener("click", checkout);
+        }
+
+        fetchCart();
+
+
+        const cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+// نمایش اطلاعات سبد خرید
+cart.forEach(item => {
+    console.log(`Product ID: ${item.product_id}, Quantity: ${item.quantity}`);
+});
+
     </script>
 </body>
 </html>
+
+
+
+
+{#<!DOCTYPE html>#}
+{#<html lang="fa">#}
+{#<head>#}
+{#    <meta charset="UTF-8">#}
+{#    <meta name="viewport" content="width=device-width, initial-scale=1.0">#}
+{#    <title>سبد خرید</title>#}
+{#    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">#}
+{#</head>#}
+{#<body class="bg-gray-100 p-4">#}
+{#    <div class="container mx-auto">#}
+{#        <h1 class="text-2xl font-bold mb-4">سبد خرید</h1>#}
+{##}
+{#        <div id="cart-items" class="bg-white p-4 shadow rounded"></div>#}
+{#        <p class="text-lg font-bold mt-4">مجموع: <span id="grand-total">0</span> تومان</p>#}
+{##}
+{#        <button onclick="checkout()" class="bg-green-500 text-white px-4 py-2 rounded mt-4">پرداخت</button>#}
+{##}
+{#    </div>#}
+{##}
+{#    <script>#}
+{#        const API_URL = "http://127.0.0.1:8000";#}
+{#        let cartId = localStorage.getItem("cartId");#}
+{##}
+{#        async function loadCart() {#}
+{#            if (!cartId) return;#}
+{##}
+{#            try {#}
+{#                const response = await fetch(`${API_URL}/carts/${cartId}/`);#}
+{#                const cart = await response.json();#}
+{#                renderCart(cart);#}
+{#            } catch (error) {#}
+{#                console.error("خطا در دریافت سبد خرید:", error);#}
+{#            }#}
+{#        }#}
+{##}
+{#        function renderCart(cart) {#}
+{#            const cartContainer = document.getElementById("cart-items");#}
+{#            cartContainer.innerHTML = "";#}
+{#            document.getElementById("cart-total").innerText = cart.grand_total;#}
+{##}
+{#            cart.items.forEach(item => {#}
+{#                const cartItem = document.createElement("div");#}
+{#                cartItem.classList.add("border-b", "py-2");#}
+{#                cartItem.innerHTML = `#}
+{#                    <p><strong>${item.product.name}</strong> - ${item.quantity} عدد - ${item.sub_total} تومان</p>#}
+{#                    <button onclick="removeFromCart('${item.id}')" class="bg-red-500 text-white px-2 py-1 rounded">حذف</button>#}
+{#                `;#}
+{#                cartContainer.appendChild(cartItem);#}
+{#            });#}
+{#        }#}
+{##}
+{#        async function addToCart(productId) {#}
+{#            if (!cartId) {#}
+{#                const cartResponse = await fetch(`${API_URL}/carts/`, { method: "POST" });#}
+{#                const newCart = await cartResponse.json();#}
+{#                cartId = newCart.id;#}
+{#                localStorage.setItem("cartId", cartId);#}
+{#            }#}
+{##}
+{#            await fetch(`${API_URL}/carts/${cartId}/items/`, {#}
+{#                method: "POST",#}
+{#                headers: { "Content-Type": "application/json" },#}
+{#                body: JSON.stringify({ product_id: productId, quantity: 1 })#}
+{#            });#}
+{##}
+{#            loadCart();#}
+{#        }#}
+{##}
+{#        async function removeFromCart(itemId) {#}
+{#            await fetch(`${API_URL}/carts/${cartId}/items/${itemId}/`, { method: "DELETE" });#}
+{#            loadCart();#}
+{#        }#}
+{##}
+{#        function checkout() {#}
+{#            alert("پرداخت انجام شد!");#}
+{#        }#}
+{##}
+{#        document.addEventListener("DOMContentLoaded", loadCart);#}
+{#    </script>#}
+{#</body>#}
+{#</html>#}

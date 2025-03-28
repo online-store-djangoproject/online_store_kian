@@ -1,0 +1,241 @@
+{#// چک کردن اینکه آیا توکن JWT وجود دارد یا خیر#}
+{#        function checkAuth() {#}
+{#            const token = localStorage.getItem("access_token"); // فرض بر این است که توکن با کلید "jwt_token" در localStorage ذخیره می‌شود#}
+{#            if (!token) {#}
+{#                alert("برای انجام تسویه حساب باید وارد حساب کاربری شوید!");#}
+{#                window.location.href = "http://127.0.0.1:8000/choicelog/"; // هدایت کاربر به صفحه لاگین#}
+{#            }#}
+{#        }#}
+
+
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسویه حساب</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.0/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-6">
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
+        <h1 class="text-3xl font-bold mb-4">تسویه حساب</h1>
+
+        <!-- انتخاب آدرس -->
+        <div class="mb-4">
+            <label for="address-select" class="block font-bold mb-2">انتخاب آدرس:</label>
+            <select id="address-select" class="w-full p-2 border rounded">
+                <option value="">در حال دریافت آدرس‌ها...</option>
+            </select>
+            <button onclick="addNewAddress()" class="mt-2 text-blue-600 underline">افزودن آدرس جدید</button>
+        </div>
+
+        <div id="cart-items" class="mb-6">
+            <!-- آیتم‌های سبد خرید اینجا نمایش داده خواهند شد -->
+        </div>
+
+        <div class="flex justify-between items-center">
+            <p class="font-bold text-xl" id="cart-total">مجموع: 0 تومان</p>
+        </div>
+
+        <label for="discount-code">کد تخفیف:</label>
+        <input type="text" id="discount-code" class="border p-2 rounded">
+        <button onclick="applyDiscount()" class="bg-blue-500 text-white px-4 py-2 rounded">اعمال</button>
+
+        <p id="discount-message" class="text-red-500"></p>
+        <p class="font-bold text-xl" id="final-price"></p>
+        <!-- دکمه برگشت به صفحه قبلی -->
+        <button onclick="window.history.back()" class="bg-gray-500 text-white px-4 py-2 rounded mt-4">بازگشت</button>
+        <!-- دکمه پرداخت -->
+        <button onclick="processCheckout()" class="bg-green-500 text-white px-4 py-2 rounded mt-4">پرداخت</button>
+    </div>
+
+    <script>
+        const API_URL = "http://127.0.0.1:8000";  // آدرس API
+        const token = localStorage.getItem("access_token");
+        let cartTotal = 0;  // مقدار پیش‌فرض سبد خرید
+
+
+        // بررسی احراز هویت کاربر
+        function checkAuth() {
+            if (!token) {
+                alert("برای انجام تسویه حساب باید وارد حساب کاربری شوید!");
+                window.location.href = "http://127.0.0.1:8000/choicelog/";
+            }
+        }
+
+        // دریافت لیست آدرس‌های کاربر
+        async function loadUserAddresses() {
+            const addressSelect = document.getElementById("address-select");
+            try {
+                const response = await fetch(`${API_URL}/addresses/`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error("خطا در دریافت آدرس‌ها");
+                }
+
+                const addresses = await response.json();
+                addressSelect.innerHTML = "";
+
+                if (addresses.length === 0) {
+                    addressSelect.innerHTML = `<option value="">هیچ آدرسی یافت نشد، لطفاً یک آدرس جدید اضافه کنید.</option>`;
+                } else {
+                    addresses.forEach(address => {
+                        const option = document.createElement("option");
+                        option.value = address.id;
+                        option.textContent = `${address.city}, ${address.full_address}`;
+                        addressSelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error("خطا در دریافت آدرس‌ها:", error);
+                addressSelect.innerHTML = `<option value="">خطا در دریافت آدرس‌ها</option>`;
+            }
+        }
+
+
+
+    // دریافت آیتم‌های سبد خرید از localStorage
+    function getCartItemsFromLocalStorage() {
+        const cartItems = JSON.parse(localStorage.getItem("cart_items")) || [];
+        return cartItems;
+    }
+
+    // نمایش آیتم‌های سبد خرید و محاسبه مجموع
+    function renderCartItems(cartItems) {
+        const cartItemsContainer = document.getElementById("cart-items");
+        cartItemsContainer.innerHTML = "";
+        cartTotal = 0; // مقداردهی مجدد قبل از محاسبه مجموع
+
+        if (cartItems.length === 0) {
+            cartItemsContainer.innerHTML = "<p>سبد خرید شما خالی است.</p>";
+            document.getElementById("cart-total").innerText = "مجموع: ۰ تومان";
+            document.getElementById("final-price").innerText = "مبلغ نهایی: ۰ تومان";
+            return;
+        }
+
+        cartItems.forEach(item => {
+            const itemTotal = item.quantity * item.product.price;
+            cartTotal += itemTotal;
+
+            const itemElement = document.createElement("div");
+            itemElement.classList.add("flex", "justify-between", "items-center", "border-b", "py-2");
+
+            itemElement.innerHTML = `
+                <div>
+                    <h4 class="text-lg font-bold">${item.product.name}</h4>
+                    <p class="text-gray-600">تعداد: ${item.quantity}</p>
+                    <p class="text-gray-500">قیمت واحد: ${item.product.price} تومان</p>
+                </div>
+                <div>
+                    <p class="font-bold">${itemTotal} تومان</p>
+                </div>
+            `;
+
+            cartItemsContainer.appendChild(itemElement);
+        });
+
+        // نمایش مجموع مبلغ سبد خرید
+        document.getElementById("cart-total").innerText = `مجموع سبد خرید: ${cartTotal.toLocaleString()} تومان`;
+        document.getElementById("final-price").innerText = `مبلغ نهایی: ${cartTotal.toLocaleString()} تومان`;
+    }
+
+
+        // ثبت سفارش و پرداخت
+        async function processCheckout() {
+            const selectedAddress = document.getElementById("address-select").value;
+            const cartItems = getCartItemsFromLocalStorage();
+
+            if (!selectedAddress) {
+                alert("لطفاً یک آدرس را انتخاب کنید.");
+                return;
+            }
+
+            if (cartItems.length === 0) {
+                alert("سبد خرید شما خالی است.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/checkout/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        address_id: selectedAddress,
+                        items: cartItems.map(item => ({
+                            product_id: item.product.id,
+                            quantity: item.quantity
+                        }))
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error("خطا در پردازش پرداخت");
+                }
+
+                alert("پرداخت با موفقیت انجام شد!");
+                localStorage.removeItem("cart_items"); // حذف سبد خرید از localStorage
+                window.location.href = "success.html"; // هدایت به صفحه موفقیت
+            } catch (error) {
+                console.error("خطا در پرداخت:", error);
+                alert("مشکلی در پرداخت به وجود آمد.");
+            }
+        }
+
+        // هدایت به صفحه افزودن آدرس جدید
+        function addNewAddress() {
+            window.location.href = "http://127.0.0.1:8000/proaddress/";
+        }
+
+        // هنگام بارگذاری صفحه، بررسی احراز هویت و دریافت اطلاعات
+        document.addEventListener("DOMContentLoaded", () => {
+            checkAuth();
+            loadUserAddresses();
+            const cartItems = getCartItemsFromLocalStorage();
+            renderCartItems(cartItems);
+        });
+
+
+
+        // اعمال کد تخفیف
+    async function applyDiscount() {
+        const discountCode = document.getElementById("discount-code").value.trim();
+        if (!discountCode) return;
+
+        try {
+            const response = await fetch(`${API_URL}/discounts/validate/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+                },
+                body: JSON.stringify({ code: discountCode })
+            });
+
+            const data = await response.json();
+            if (data.valid) {
+                const discountPercentage = data.discount_percentage;
+                const discountAmount = (cartTotal * discountPercentage) / 100;
+                cartTotal -= discountAmount;
+
+                document.getElementById("discount-message").innerText = `✅ ${data.message}`;
+                document.getElementById("final-price").innerText = `مبلغ نهایی: ${cartTotal.toLocaleString()} تومان`;
+            } else {
+                document.getElementById("discount-message").innerText = `❌ ${data.message}`;
+            }
+        } catch (error) {
+            console.error("خطا در بررسی کد تخفیف:", error);
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const cartItems = getCartItemsFromLocalStorage();
+        renderCartItems(cartItems);
+    });
+    </script>
+</body>
+</html>
