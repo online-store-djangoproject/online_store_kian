@@ -130,6 +130,35 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 
+# class CreateOrderSerializer(serializers.Serializer):
+#     cart_id = serializers.UUIDField()
+#
+#     def validate_cart_id(self, cart_id):
+#         if not Cart.objects.filter(pk=cart_id).exists():
+#             raise serializers.ValidationError("This cart_id is invalid")
+#
+#         elif not Cartitems.objects.filter(cart_id=cart_id).exists():
+#             raise serializers.ValidationError("Sorry your cart is empty")
+#
+#         return cart_id
+#
+#     def save(self, **kwargs):
+#         with transaction.atomic():
+#             cart_id = self.validated_data["cart_id"]
+#             user_id = self.context["user_id"]
+#             order = Order.objects.create(owner_id=user_id)
+#             cartitems = Cartitems.objects.filter(cart_id=cart_id)
+#             orderitems = [
+#                 OrderItem(order=order,
+#                           product=item.product,
+#                           quantity=item.quantity
+#                           )
+#                 for item in cartitems
+#             ]
+#             OrderItem.objects.bulk_create(orderitems)
+#             # Cart.objects.filter(id=cart_id).delete()
+#             return order
+
 class CreateOrderSerializer(serializers.Serializer):
     cart_id = serializers.UUIDField()
 
@@ -143,11 +172,15 @@ class CreateOrderSerializer(serializers.Serializer):
         return cart_id
 
     def save(self, **kwargs):
-        with transaction.atomic():
+        with transaction.atomic():  # جلوگیری از ایجاد سفارش ناقص
             cart_id = self.validated_data["cart_id"]
             user_id = self.context["user_id"]
+
+            # ایجاد سفارش جدید
             order = Order.objects.create(owner_id=user_id)
             cartitems = Cartitems.objects.filter(cart_id=cart_id)
+
+            # افزودن آیتم‌های سبد خرید به سفارش
             orderitems = [
                 OrderItem(order=order,
                           product=item.product,
@@ -156,7 +189,10 @@ class CreateOrderSerializer(serializers.Serializer):
                 for item in cartitems
             ]
             OrderItem.objects.bulk_create(orderitems)
-            # Cart.objects.filter(id=cart_id).delete()
+
+            # حذف آیتم‌های سبد خرید از دیتابیس
+            cartitems.delete()
+
             return order
 
 
