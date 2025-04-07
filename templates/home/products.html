@@ -12,6 +12,7 @@
     <a id="login-btn" href="http://127.0.0.1:8000/choicelog/" class="bg-blue-500 text-white px-4 py-2 rounded">ورود</a>
     <a id="signup-btn" href="http://127.0.0.1:8000/req/" class="bg-green-500 text-white px-4 py-2 rounded">ثبت‌نام</a>
     <a id="profile-btn" href="http://127.0.0.1:8000/basepro/" class="bg-gray-700 text-white px-4 py-2 rounded hidden">پروفایل من</a>
+    <button id="logout-btn" onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded hidden ml-2">خروج از حساب</button>
 </div>
 
 <button onclick="checkout()" class="bg-green-500 text-white px-4 py-2 rounded mt-4">
@@ -107,15 +108,46 @@
         let cartId = null;
 
     document.addEventListener("DOMContentLoaded", function () {
-        const token = localStorage.getItem("access_token");  // گرفتن توکن از localStorage
+    const token = localStorage.getItem("access_token");
 
-        if (token) {
-            // کاربر لاگین کرده => نمایش دکمه "پروفایل" و مخفی کردن دکمه‌های "ورود" و "ثبت‌نام"
-            document.getElementById("profile-btn").classList.remove("hidden");
-            document.getElementById("login-btn").classList.add("hidden");
-            document.getElementById("signup-btn").classList.add("hidden");
+    if (token) {
+        document.getElementById("profile-btn").classList.remove("hidden");
+        document.getElementById("logout-btn").classList.remove("hidden");  // اضافه شده
+        document.getElementById("login-btn").classList.add("hidden");
+        document.getElementById("signup-btn").classList.add("hidden");
+    }
+});
+
+    async function logout() {
+        const refreshToken = localStorage.getItem("refresh_token");
+
+        if (!refreshToken) {
+            // فقط توکن access هست؟ بفرستش به لاگین
+            localStorage.removeItem("access_token");
+            window.location.href = "http://127.0.0.1:8000/pproductt/";
+            return;
         }
-    });
+
+        try {
+            const response = await fetch("http://127.0.0.1:8000/logout/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ refresh_token: refreshToken }),
+            });
+
+            // چه موفق باشه چه نه، توکن‌ها رو پاک کن
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("refresh_token");
+            window.location.href = "http://127.0.0.1:8000/pproductt/";
+        } catch (error) {
+            console.error("خطا در خروج از حساب:", error);
+            localStorage.removeItem("access_token");
+            localStorage.removeItem("refresh_token");
+            window.location.href = "http://127.0.0.1:8000/pproductt/";
+        }
+    }
 {#    if (token) {#}
 {#        // اگر توکن وجود دارد، لینک را به پروفایل تنظیم کن#}
 {#        profileBtn.href = "http://127.0.0.1:8000/basepro/";#}
