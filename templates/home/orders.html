@@ -1,0 +1,110 @@
+
+
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سفارش‌های من</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.0/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-6">
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
+        <h1 class="text-3xl font-bold mb-4 text-center">سفارش‌های من</h1>
+
+        <div id="orders-list" class="space-y-4">
+            <!-- سفارش‌ها به‌صورت داینامیک در اینجا نمایش داده می‌شوند -->
+        </div>
+
+        <!-- دکمه برگشت -->
+        <div class="mt-6 text-center">
+            <a href="http://127.0.0.1:8000/pproductt/" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">بازگشت به صفحه اصلی</a>
+            <button onclick="window.history.back()" class="bg-gray-500 text-white px-4 py-2 rounded mt-4">Back</button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://127.0.0.1:8000";  // آدرس API بک‌اند
+        const token = localStorage.getItem("access_token");
+
+        // بررسی احراز هویت
+       function checkAuth() {
+           if (!token) {
+               alert("برای مشاهده سفارشات باید وارد حساب کاربری شوید!");
+               window.location.href = "http://127.0.0.1:8000/choicelog/"; // هدایت به صفحه ورود
+           }
+       }
+
+
+        // دریافت لیست سفارشات از سرور
+        async function loadOrders() {
+            const ordersContainer = document.getElementById("orders-list");
+
+            try {
+                const response = await fetch(`${API_URL}/orders/`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error("خطا در دریافت سفارش‌ها");
+                }
+
+                const orders = await response.json();
+                ordersContainer.innerHTML = "";
+
+                if (orders.length === 0) {
+                    ordersContainer.innerHTML = "<p class='text-center text-gray-600'>هیچ سفارشی ثبت نشده است.</p>";
+                    return;
+                }
+
+                orders.forEach(order => {
+                    const orderElement = document.createElement("div");
+                    orderElement.classList.add("p-4", "border", "rounded-lg", "shadow-sm", "bg-gray-50");
+
+                    orderElement.innerHTML = `
+                        <h3 class="text-lg font-bold">سفارش شماره ${order.id}</h3>
+                        <p class="text-gray-600">تاریخ ثبت: ${new Date(order.placed_at).toLocaleDateString("fa-IR")}</p>
+                        <p class="text-gray-700 font-bold mt-2">وضعیت پرداخت:
+                            <span class="${getStatusClass(order.pending_status)}">${getStatusText(order.pending_status)}</span>
+                        </p>
+                        <ul class="mt-2 border-t pt-2">
+                            ${order.items.map(item => `
+                                <li class="flex justify-between text-gray-700">
+                                    <span>${item.product.name} (x${item.quantity})</span>
+                                    <span class="font-bold">${(item.product.price * item.quantity).toLocaleString()} تومان</span>
+                                </li>
+                            `).join("")}
+                        </ul>
+                    `;
+
+                    ordersContainer.appendChild(orderElement);
+                });
+            } catch (error) {
+                console.error("خطا در دریافت سفارش‌ها:", error);
+                ordersContainer.innerHTML = `<p class='text-center text-red-500'>مشکلی در دریافت سفارشات وجود دارد.</p>`;
+            }
+        }
+
+        function getStatusClass(status) {
+    switch (status) {
+        case "P": return "text-yellow-600 font-bold";  // در انتظار پرداخت
+        case "C": return "text-green-600 font-bold";   // پرداخت شده
+        case "F": return "text-red-600 font-bold";     // پرداخت ناموفق
+        default: return "text-gray-600";               // وضعیت نامشخص
+    }
+}
+
+function getStatusText(status) {
+    switch (status) {
+        case "P": return "در انتظار پرداخت";
+        case "C": return "پرداخت شده ✅";
+        case "F": return "پرداخت ناموفق ❌";
+        default: return "نامشخص";
+    }
+}
+
+
+        document.addEventListener("DOMContentLoaded", loadOrders);
+    </script>
+</body>
+</html>

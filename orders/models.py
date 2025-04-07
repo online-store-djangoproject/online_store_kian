@@ -33,12 +33,16 @@ class Order(models.Model):
     ]
     placed_at = models.DateTimeField(auto_now_add=True)
     pending_status = models.CharField(
-        max_length=50, choices=PAYMENT_STATUS_CHOICES, default='PAYMENT_STATUS_PENDING')
+        max_length=50, choices=PAYMENT_STATUS_CHOICES, default=PAYMENT_STATUS_PENDING)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
 
     def __str__(self):
-        return self.pending_status
+        return f'{self.pending_status}, Order {self.id} - Status: {self.get_pending_status_display()}'
 
+    def update_total_amount(self):
+        total = sum(item.product.price * item.quantity for item in self.items.all())
+        self.total_amount = total
+        self.save()
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.PROTECT, related_name="items")

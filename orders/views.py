@@ -68,6 +68,12 @@ class OrderViewSet(ModelViewSet):
             return Order.objects.all()
         return Order.objects.filter(owner=user)
 
+    def partial_update(self, request, *args, **kwargs):
+        order = self.get_object()
+        order.pending_status = Order.PAYMENT_STATUS_COMPLETE  # تغییر وضعیت به پرداخت شده
+        order.save()
+        return Response(OrderSerializer(order).data)
+
     # def get_serializer_context(self):
     #     return {"user_id": self.request.user.id}
 

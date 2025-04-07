@@ -42,6 +42,10 @@
     <script>
         const API_URL = "http://127.0.0.1:8000";  // آدرس API
         const token = localStorage.getItem("access_token");
+        console.log("Access Token:", localStorage.getItem("access_token"));
+        console.log("Cart Items:", JSON.parse(localStorage.getItem("cart_items")));
+        console.log("Cart ID:", localStorage.getItem("cart_id"));
+
         let cartTotal = 0;  // مقدار پیش‌فرض سبد خرید
 
 
@@ -134,20 +138,26 @@
 
         // ثبت سفارش و پرداخت
         async function processCheckout() {
-            const selectedAddress = document.getElementById("address-select").value;
-            const cartItems = getCartItemsFromLocalStorage();
+    const selectedAddress = document.getElementById("address-select").value;
+    const cartItems = getCartItemsFromLocalStorage();
+    const cartId = cartItems.length > 0 ? cartItems[0].cart : localStorage.getItem("cart_id"); // دریافت cart_id درست
 
-            if (!selectedAddress) {
-                alert("لطفاً یک آدرس را انتخاب کنید.");
-                return;
-            }
+    if (!selectedAddress) {
+        alert("لطفاً یک آدرس را انتخاب کنید.");
+        return;
+    }
 
-            if (cartItems.length === 0) {
-                alert("سبد خرید شما خالی است.");
-                return;
-            }
+    if (cartItems.length === 0) {
+        alert("سبد خرید شما خالی است.");
+        return;
+    }
 
-            try {
+    if (!cartId) {
+        alert("شناسه سبد خرید معتبر نیست.");
+        return;
+    }
+
+    try {
         // ارسال درخواست POST برای ثبت سفارش
         const response = await fetch(`${API_URL}/orders/`, {
             method: "POST",
@@ -155,31 +165,29 @@
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
             },
-            body: JSON.stringify({
-                cart_id: selectedAddress, // آدرس انتخابی
-                items: cartItems.map(item => ({
-                    product_id: item.product.id,
-                    quantity: item.quantity
-                }))
-            })
+            body: JSON.stringify({ cart_id: cartId }) // ارسال فقط cart_id
         });
 
-                if (!response.ok) {
-                    throw new Error("خطا در پردازش پرداخت");
-                }
+        if (!response.ok) {
+            const errorData = await response.json(); // دریافت پیام خطا از سرور
+            console.error("سرور پیام خطا فرستاد:", errorData);
+            alert(errorData.cart_id ? errorData.cart_id[0] : "خطا در پردازش پرداخت");
+            return;
+        }
 
-                // دریافت پاسخ از سرور و نمایش اطلاعات سفارش
+        // دریافت پاسخ از سرور و نمایش اطلاعات سفارش
         const order = await response.json();
         alert("پرداخت با موفقیت انجام شد!");
 
         // حذف سبد خرید از localStorage
         localStorage.removeItem("cart_items");
-        window.location.href = `success.html?order_id=${order.id}`; // هدایت به صفحه موفقیت با شناسه سفارش
+        window.location.href = `http://127.0.0.1:8000/successs/?order_id=${order.id}`; // هدایت به صفحه موفقیت با شناسه سفارش
     } catch (error) {
         console.error("خطا در پرداخت:", error);
         alert("مشکلی در پرداخت به وجود آمد.");
     }
 }
+
 
         // هدایت به صفحه افزودن آدرس جدید
         function addNewAddress() {

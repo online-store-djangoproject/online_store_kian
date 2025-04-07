@@ -190,6 +190,9 @@ class CreateOrderSerializer(serializers.Serializer):
             ]
             OrderItem.objects.bulk_create(orderitems)
 
+            # محاسبه و ذخیره مبلغ نهایی
+            order.update_total_amount()
+
             # حذف آیتم‌های سبد خرید از دیتابیس
             cartitems.delete()
 
