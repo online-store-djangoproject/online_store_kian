@@ -15,7 +15,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.encoding import smart_bytes, force_str
 from django.urls import reverse
-
+from src.tasks import send_otp_email_task
 
 
 
@@ -93,7 +93,7 @@ class UserOTPLoginSerializer(serializers.Serializer):
 
         redis_client.setex(f"otp:{email}", 300, otp)
 
-        send_otp_email(email, otp)
+        send_otp_email_task.delay(email, otp)
         return data
 
 

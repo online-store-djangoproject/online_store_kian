@@ -188,6 +188,10 @@ DEFAULT_FROM_EMAIL = 'OnlineStoreKian'
 
 # redis
 
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
+
+
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
@@ -197,6 +201,8 @@ CACHES = {
         }
     }
 }
+
+SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 
 # REST_FRAMEWORK_PAGE
 
