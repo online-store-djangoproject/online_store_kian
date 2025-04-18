@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-gray-100">
+    <div class="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold text-center mb-4">User Profile</h2>
+
+        <div id="notification" class="hidden p-2 mb-4 text-center rounded-lg"></div>
+
+        <div id="profile-info" class="hidden">
+            <p><strong>Email:</strong> <span id="email"></span></p>
+            <p><strong>First Name:</strong> <span id="first-name"></span></p>
+            <p><strong>Last Name:</strong> <span id="last-name"></span></p>
+            <p><strong>Phone:</strong> <span id="phone"></span></p>
+        </div>
+
+        <div id="edit-profile" class="hidden">
+            <input type="text" id="edit-first-name" placeholder="First Name" class="border p-2 w-full mb-2" />
+            <input type="text" id="edit-last-name" placeholder="Last Name" class="border p-2 w-full mb-2" />
+            <input type="text" id="edit-phone" placeholder="Phone" class="border p-2 w-full mb-2" />
+            <button id="save-btn" class="w-full bg-blue-500 text-white py-2 rounded-lg">Save Changes</button>
+        </div>
+
+        <button id="edit-btn" class="w-full bg-gray-500 text-white py-2 rounded-lg mt-4">Edit Profile</button>
+        <button onclick="goBack()" class="w-full bg-gray-500 text-white py-2 rounded-lg mt-4">Back</button>
+    </div>
+
+    <script>
+        let originalFirstName = '';
+        let originalLastName = '';
+        let originalPhone = '';
+
+        function showNotification(message, type) {
+            const notification = document.getElementById("notification");
+            notification.textContent = message;
+            notification.className = `p-2 mb-4 text-center rounded-lg ${type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"}`;
+            notification.classList.remove("hidden");
+            setTimeout(() => notification.classList.add("hidden"), 3000);
+        }
+
+        async function getProfile() {
+            const accessToken = localStorage.getItem("access_token");
+            if (!accessToken) {
+                showNotification("Please log in first.", "error");
+                return;
+            }
+
+            const response = await fetch("http://127.0.0.1:8000/profile/", {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${accessToken}`,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                document.getElementById("email").textContent = result.email;
+                document.getElementById("first-name").textContent = result.first_name;
+                document.getElementById("last-name").textContent = result.last_name;
+                document.getElementById("phone").textContent = result.phone;
+
+                originalFirstName = result.first_name;
+                originalLastName = result.last_name;
+                originalPhone = result.phone;
+
+                document.getElementById("profile-info").classList.remove("hidden");
+            } else {
+                showNotification("Failed to fetch profile. Please try again.", "error");
+            }
+        }
+
+        async function updateProfile() {
+            const accessToken = localStorage.getItem("access_token");
+            if (!accessToken) {
+                showNotification("Please log in first.", "error");
+                return;
+            }
+
+            const firstName = document.getElementById("edit-first-name").value || originalFirstName;
+            const lastName = document.getElementById("edit-last-name").value || originalLastName;
+            const phone = document.getElementById("edit-phone").value || originalPhone;
+
+            const data = {};
+            if (firstName !== originalFirstName) data.first_name = firstName;
+            if (lastName !== originalLastName) data.last_name = lastName;
+            if (phone !== originalPhone) data.phone = phone;
+
+            const response = await fetch("http://127.0.0.1:8000/profile/update/", {
+                method: "PATCH",
+                headers: {
+                    "Authorization": `Bearer ${accessToken}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                showNotification("Profile updated successfully!", "success");
+                document.getElementById("first-name").textContent = result.first_name;
+                document.getElementById("last-name").textContent = result.last_name;
+                document.getElementById("phone").textContent = result.phone;
+
+                document.getElementById("edit-profile").classList.add("hidden");
+                document.getElementById("profile-info").classList.remove("hidden");
+
+                originalFirstName = result.first_name;
+                originalLastName = result.last_name;
+                originalPhone = result.phone;
+            } else {
+                showNotification("Failed to update profile. Please try again.", "error");
+            }
+        }
+
+        document.getElementById("edit-btn").addEventListener("click", function() {
+            document.getElementById("profile-info").classList.add("hidden");
+            document.getElementById("edit-profile").classList.remove("hidden");
+
+            document.getElementById("edit-first-name").value = originalFirstName;
+            document.getElementById("edit-last-name").value = originalLastName;
+            document.getElementById("edit-phone").value = originalPhone;
+        });
+
+        document.getElementById("save-btn").addEventListener("click", updateProfile);
+
+        window.onload = getProfile;
+
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+</body>
+</html>
