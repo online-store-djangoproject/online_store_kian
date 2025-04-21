@@ -23,10 +23,10 @@ class UserRegisterView(GenericAPIView):
         if serializer.is_valid(raise_exception=True):
             try:
                 serializer.save()
-                user = serializer.instance  # دریافت شیء User ذخیره‌شده
+                user = serializer.instance
                 print(user)
                 return Response({
-                    'data': UserRegisterSerializer(user).data,  # سریالایز مجدد برای حذف فیلدهای اضافی
+                    'data': UserRegisterSerializer(user).data,
                     'message': f'Hi {user.get_full_name()}! Thanks for signing up.'
                 }, status=status.HTTP_201_CREATED)
             except Exception as e:

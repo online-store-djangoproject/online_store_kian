@@ -1,20 +1,18 @@
-# استفاده از تصویر پایه Python
-FROM python:3.9-slim
+# Dockerfile
 
-# تنظیم متغیرهای محیطی برای جلوگیری از بافر شدن خروجی Python
+FROM python:3.10-slim
+
+ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-# تنظیم دایرکتوری کاری داخل کانتینر
 WORKDIR /app
 
-# کپی کردن فایل requirements.txt به دایرکتوری کاری داخل کانتینر
 COPY requirements.txt /app/
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# نصب وابستگی‌های پروژه
-RUN pip install --no-cache-dir -r requirements.txt
-
-# کپی کردن بقیه فایل‌ها به دایرکتوری کاری داخل کانتینر
 COPY . /app/
+COPY .env /app/.env
 
-# فرمانی برای اجرای Celery worker
-CMD ["celery", "-A", "online_store_kian", "worker", "--loglevel=info"]
+RUN python manage.py collectstatic --noinput
+
+CMD ["gunicorn", "src.wsgi:application", "--bind", "0.0.0.0:8000"]

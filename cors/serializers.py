@@ -76,7 +76,7 @@ class UserLoginSerializer(serializers.Serializer):
 
 #  login method 2 ===
 
-redis_client = redis.StrictRedis(host='127.0.0.1', port=6379, db=1, decode_responses=True)
+redis_client = redis.StrictRedis(host='redis', port=6379, db=1, decode_responses=True)
 
 class UserOTPLoginSerializer(serializers.Serializer):
     email = serializers.EmailField()

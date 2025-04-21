@@ -20,7 +20,7 @@ class CartItemViewSet(ModelViewSet):
     def get_queryset(self):
         cart_pk = self.kwargs.get("cart_pk")
         if not cart_pk:
-            return Cartitems.objects.none()  # اگر مقدار cart_pk نبود، کوئری را خالی برگردان
+            return Cartitems.objects.none()
         return Cartitems.objects.filter(cart_id=cart_pk)
         # return Cartitems.objects.filter(cart_id=self.kwargs["cart_pk"])
 
@@ -70,7 +70,7 @@ class OrderViewSet(ModelViewSet):
 
     def partial_update(self, request, *args, **kwargs):
         order = self.get_object()
-        order.pending_status = Order.PAYMENT_STATUS_COMPLETE  # تغییر وضعیت به پرداخت شده
+        order.pending_status = Order.PAYMENT_STATUS_COMPLETE
         order.save()
         return Response(OrderSerializer(order).data)
 

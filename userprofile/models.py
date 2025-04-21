@@ -22,18 +22,18 @@ class Address(models.Model):
 
 
 class DiscountCode(models.Model):
-    code = models.CharField(max_length=20, unique=True)  # کد تخفیف
+    code = models.CharField(max_length=20, unique=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="discount_codes")
     percentage = models.IntegerField(default=15)  # درصد تخفیف
-    created_at = models.DateTimeField(auto_now_add=True)  # زمان ایجاد
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.code} - {self.user.email}"
 
     @staticmethod
     def user_can_get_discount(user):
-        """ بررسی کند که آیا کاربر می‌تواند کد جدید دریافت کند یا نه """
+
         last_code = DiscountCode.objects.filter(user=user).order_by('-created_at').first()
         if last_code and last_code.created_at.month == now().month:
-            return False  # اگر کاربر در این ماه کد گرفته، اجازه ندارد
+            return False
         return True
