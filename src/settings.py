@@ -26,15 +26,16 @@ environ.Env.read_env(BASE_DIR / '.env')
 SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool('DEBUG', default=False)
+
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
-
+# ALLOWED_HOSTS = ['*']
 
 # Application definition
 
 INSTALLED_APPS = [
-     'django.contrib.admin',
+    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -137,11 +138,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # برای جمع‌آوری فایل‌ها
+# STATIC_ROOT = BASE_DIR / 'static'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')  # برای جمع‌آوری فایل‌ها
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),  # محل فایل‌های استاتیک توسعه
-]
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, 'static'),  # محل فایل‌های استاتیک توسعه
+# ]
+SITE_URL = "http://localhost"
 
 
 MEDIA_URL = '/media/'

@@ -38,7 +38,7 @@
         document.getElementById("send-otp-btn").addEventListener("click", async function() {
             const email = document.getElementById("email").value;
 
-            const response = await fetch("http://127.0.0.1:8000/login/send_otp/", {
+            const response = await fetch("http://localhost/login/send_otp/", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email })
@@ -59,7 +59,7 @@
             const email = localStorage.getItem("otp_email");
             const otp = document.getElementById("otp").value;
 
-            const response = await fetch("http://127.0.0.1:8000/login/verify_otp/", {
+            const response = await fetch("http://localhost/login/verify_otp/", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, otp })
@@ -74,7 +74,7 @@
 
                 showNotification("Login successful! Redirecting...", "success");
                 setTimeout(() => {
-                    window.location.href = "http://127.0.0.1:8000/basepro/";
+                    window.location.href = "http://localhost/basepro/";
                 }, 1500);
             } else {
                 showNotification(result.detail || "Invalid OTP!", "error");
