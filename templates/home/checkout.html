@@ -40,7 +40,7 @@
     </div>
 
     <script>
-        const API_URL = "http://127.0.0.1:8000";  // آدرس API
+        const API_URL = "http://localhost";  // آدرس API
         const token = localStorage.getItem("access_token");
         console.log("Access Token:", localStorage.getItem("access_token"));
         console.log("Cart Items:", JSON.parse(localStorage.getItem("cart_items")));
@@ -53,7 +53,7 @@
         function checkAuth() {
             if (!token) {
                 alert("برای انجام تسویه حساب باید وارد حساب کاربری شوید!");
-                window.location.href = "http://127.0.0.1:8000/choicelog/";
+                window.location.href = "http://localhost/choicelog/";
             }
         }
 
@@ -181,7 +181,7 @@
 
         // حذف سبد خرید از localStorage
         localStorage.removeItem("cart_items");
-        window.location.href = `http://127.0.0.1:8000/successs/?order_id=${order.id}`; // هدایت به صفحه موفقیت با شناسه سفارش
+        window.location.href = `http://localhost/successs/?order_id=${order.id}`; // هدایت به صفحه موفقیت با شناسه سفارش
     } catch (error) {
         console.error("خطا در پرداخت:", error);
         alert("مشکلی در پرداخت به وجود آمد.");
@@ -191,7 +191,7 @@
 
         // هدایت به صفحه افزودن آدرس جدید
         function addNewAddress() {
-            window.location.href = "http://127.0.0.1:8000/proaddress/";
+            window.location.href = "http://localhost/proaddress/";
         }
 
         // هنگام بارگذاری صفحه، بررسی احراز هویت و دریافت اطلاعات

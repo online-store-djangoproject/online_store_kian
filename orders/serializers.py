@@ -36,7 +36,7 @@ class AddCartItemSerializer(serializers.ModelSerializer):
             cartitem = Cartitems.objects.get(product_id=product_id, cart_id=cart_id)
             product = cartitem.product
 
-            # استفاده از `inventory` به جای `stock`
+
             if cartitem.quantity + quantity > product.inventory:
                 raise serializers.ValidationError("موجودی محصول کافی نیست")
 
@@ -46,7 +46,7 @@ class AddCartItemSerializer(serializers.ModelSerializer):
             self.instance = cartitem
 
         except Cartitems.DoesNotExist:
-            # در صورتی که آیتمی وجود نداشت، آیتم جدید اضافه کن
+
             product = Product.objects.get(pk=product_id)
             if quantity > product.inventory:
                 raise serializers.ValidationError("موجودی محصول کافی نیست")
@@ -72,7 +72,7 @@ class UpdateCartItemSerializer(serializers.ModelSerializer):
     # def update(self, instance, validated_data):
     #     quantity = validated_data.get("quantity", instance.quantity)
     #     if quantity <= 0:
-    #         instance.delete()  # اگر مقدار صفر شد، آیتم حذف شود
+    #         instance.delete()
     #     else:
     #         instance.quantity = quantity
     #         instance.save()
@@ -89,8 +89,8 @@ class UpdateCartItemSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         if validated_data["quantity"] < 1:
-            instance.delete()  # حذف آیتم از سبد خرید
-            return None  # مقدار None برمی‌گردونیم تا فرانت بفهمه حذف شده
+            instance.delete()
+            return None
         return super().update(instance, validated_data)
 
 
@@ -172,15 +172,15 @@ class CreateOrderSerializer(serializers.Serializer):
         return cart_id
 
     def save(self, **kwargs):
-        with transaction.atomic():  # جلوگیری از ایجاد سفارش ناقص
+        with transaction.atomic():
             cart_id = self.validated_data["cart_id"]
             user_id = self.context["user_id"]
 
-            # ایجاد سفارش جدید
+
             order = Order.objects.create(owner_id=user_id)
             cartitems = Cartitems.objects.filter(cart_id=cart_id)
 
-            # افزودن آیتم‌های سبد خرید به سفارش
+
             orderitems = [
                 OrderItem(order=order,
                           product=item.product,
@@ -190,10 +190,10 @@ class CreateOrderSerializer(serializers.Serializer):
             ]
             OrderItem.objects.bulk_create(orderitems)
 
-            # محاسبه و ذخیره مبلغ نهایی
+
             order.update_total_amount()
 
-            # حذف آیتم‌های سبد خرید از دیتابیس
+
             cartitems.delete()
 
             return order

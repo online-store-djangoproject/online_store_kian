@@ -24,7 +24,7 @@
     <script>
         document.getElementById("register-form").addEventListener("submit", async function(event) {
             event.preventDefault();
-            const response = await fetch("http://127.0.0.1:8000/register/", {
+            const response = await fetch("http://localhost/register/", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -39,7 +39,7 @@
             const result = await response.json();
             if (response.ok) {
                 alert("Registration successful! Redirecting to login.");
-                window.location.href = "http://127.0.0.1:8000/choicelog/";
+                window.location.href = "http://localhost/choicelog/";
             } else {
                 alert("Error: " + JSON.stringify(result));
             }

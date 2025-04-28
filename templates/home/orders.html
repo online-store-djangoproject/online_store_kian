@@ -18,20 +18,20 @@
 
         <!-- دکمه برگشت -->
         <div class="mt-6 text-center">
-            <a href="http://127.0.0.1:8000/pproductt/" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">بازگشت به صفحه اصلی</a>
+            <a href="/pproductt/" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">بازگشت به صفحه اصلی</a>
             <button onclick="window.history.back()" class="bg-gray-500 text-white px-4 py-2 rounded mt-4">Back</button>
         </div>
     </div>
 
     <script>
-        const API_URL = "http://127.0.0.1:8000";  // آدرس API بک‌اند
+        const API_URL = "http://localhost";  // آدرس API بک‌اند
         const token = localStorage.getItem("access_token");
 
         // بررسی احراز هویت
        function checkAuth() {
            if (!token) {
                alert("برای مشاهده سفارشات باید وارد حساب کاربری شوید!");
-               window.location.href = "http://127.0.0.1:8000/choicelog/"; // هدایت به صفحه ورود
+               window.location.href = "http://localhost/choicelog/"; // هدایت به صفحه ورود
            }
        }
 

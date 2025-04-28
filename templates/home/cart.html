@@ -20,7 +20,7 @@
 
         <!-- دکمه‌ها -->
         <div class="mt-6 flex justify-between">
-            <button onclick="window.location.href='http://127.0.0.1:8000/pproductt/'"
+            <button onclick="window.location.href='/pproductt/'"
                     class="bg-gray-500 text-white px-4 py-2 rounded">🔙 بازگشت به فروشگاه</button>
             <button id="checkout-btn" class="bg-blue-500 text-white px-4 py-2 rounded hidden">✅ ثبت سفارش</button>
         </div>
@@ -42,7 +42,7 @@
 
             try {
                 console.log("در حال دریافت سبد خرید...");
-                const response = await fetch(`http://127.0.0.1:8000/carts/${cartId}/items/`, {
+                const response = await fetch(`http://localhost/carts/${cartId}/items/`, {
                     method: "GET",
                     headers: {
                         "Authorization": `Bearer ${token}`
@@ -94,7 +94,7 @@
             if (newQuantity < 1) return removeItem(itemId);
 
             try {
-                const response = await fetch(`http://127.0.0.1:8000/carts/${cartId}/items/${itemId}/`, {
+                const response = await fetch(`http://localhost/carts/${cartId}/items/${itemId}/`, {
                     method: "PATCH",
                     headers: {
                         "Content-Type": "application/json",
@@ -113,7 +113,7 @@
         // حذف محصول از سبد خرید
         async function removeItem(itemId) {
             try {
-                const response = await fetch(`http://127.0.0.1:8000/carts/${cartId}/items/${itemId}/`, {
+                const response = await fetch(`http://localhost/carts/${cartId}/items/${itemId}/`, {
                     method: "DELETE",
                     headers: {
                         "Authorization": `Bearer ${token}`
@@ -130,7 +130,7 @@
         // ثبت سفارش
         async function checkout() {
             try {
-                const response = await fetch("http://127.0.0.1:8000/orders/", {
+                const response = await fetch("http://localhost/orders/", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -142,7 +142,7 @@
                 if (!response.ok) throw new Error("خطا در ثبت سفارش");
                 alert("✅ سفارش شما با موفقیت ثبت شد!");
                 localStorage.removeItem("cart_id");
-                window.location.href = "http://127.0.0.1:8000/pproductt/"; // بازگشت به صفحه فروشگاه
+                window.location.href = "http://localhost/pproductt/"; // بازگشت به صفحه فروشگاه
             } catch (error) {
                 console.error(error);
             }
